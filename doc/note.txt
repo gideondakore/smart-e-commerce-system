@@ -47,3 +47,35 @@ docker compose logs           # View all logs
 docker compose logs postgres  # View specific service logs
 docker compose restart        # Restart all services
 docker compose stop           # Stop without removing
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+# Connecting to psql
+docker exec -it smart-ecommerce psql -U spycon -d ecommerce_db
+
+# Enter the container
+docker exec -it smart-ecommerce bash
+
+# Now you're inside the container, connect to psql
+psql -U spycon -d ecommerce_db
+
+
+psql -h localhost -p 5432 -U spycon -d ecommerce_db
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+Step 1: Commit the current state
+bash# Commit the container with all your tables and data
+docker commit smart-ecommerce spycon27/smart-ecommerce:latest
+Step 2: Push to Docker Hub
+bash# Push the updated image
+docker push spycon27/smart-ecommerce:latest
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+Step 3: (Optional) Also push pgAdmin if you customized it
+bash# Only if you made changes to pgAdmin
+docker commit pgadmin spycon27/pgadmin:latest
+docker push spycon27/pgadmin:latest
