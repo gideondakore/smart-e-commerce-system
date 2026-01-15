@@ -35,3 +35,15 @@ docker run -d \
 docker network create ecommerce-network
 docker network connect ecommerce-network smart-ecommerce
 docker network connect ecommerce-network pgadmin
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+docker compose up -d          # Start in background
+docker compose down           # Stop and remove containers
+docker compose ps             # Show running services
+docker compose logs           # View all logs
+docker compose logs postgres  # View specific service logs
+docker compose restart        # Restart all services
+docker compose stop           # Stop without removing
