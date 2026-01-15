@@ -83,7 +83,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.amalitech.smartecommerce.Main</mainClass>
+                    <mainClass>com.amalitech.smartecommerce.app.Main</mainClass>
                     <options>
                         <option>--enable-native-access=javafx.graphics</option>
                     </options>

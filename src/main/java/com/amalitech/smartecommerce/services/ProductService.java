@@ -2,6 +2,7 @@ package com.amalitech.smartecommerce.services;
 
 import com.amalitech.smartecommerce.dao.ProductDAO;
 import com.amalitech.smartecommerce.models.Product;
+import com.amalitech.smartecommerce.utils.InitDB;
 import com.amalitech.smartecommerce.utils.OptimizationUtils;
 import com.amalitech.smartecommerce.utils.PerformanceTimer;
 
@@ -15,14 +16,13 @@ import java.util.stream.Collectors;
  * Implements caching, searching, and sorting with DSA optimizations.
  */
 public class ProductService {
-    
+
+    private static final long CACHE_TTL_MS = 60000; // 1 minute TTL for products
     private final ProductDAO productDAO;
     private final Map<Integer, Product> productCache;
     private final Map<String, List<Product>> searchCache;
     private List<Product> allProductsCache;
     private long cacheTimestamp;
-    private static final long CACHE_TTL_MS = 60000; // 1 minute TTL for products
-
     // Statistics for performance reporting
     private int cacheHits = 0;
     private int cacheMisses = 0;
@@ -81,7 +81,8 @@ public class ProductService {
      */
     public List<Product> getAllProducts() throws SQLException {
         long now = System.currentTimeMillis();
-        
+
+        IO.println("PRODUCT CACHE: " + allProductsCache);
         // Check if cache is valid
         if (allProductsCache != null && (now - cacheTimestamp) < CACHE_TTL_MS) {
             cacheHits++;
@@ -92,14 +93,26 @@ public class ProductService {
         // Cache miss - query database
         cacheMisses++;
         IO.println("[ProductService] Loading products from database");
-        allProductsCache = productDAO.findAll();
+
+        try {
+            allProductsCache = productDAO.findAll();
+            if (allProductsCache.isEmpty()) {
+                new InitDB().seedTableWithData();
+            }
+        } catch (SQLException e) {
+            new InitDB().createTables();
+            new InitDB().seedTableWithData();
+            allProductsCache = productDAO.findAll();
+            IO.println("Newly created data: " + allProductsCache);
+        }
+        IO.println("ALL PROODUCTS FROM DB: " + allProductsCache);
         cacheTimestamp = now;
-        
+
         // Populate individual cache
         for (Product product : allProductsCache) {
             productCache.put(product.getProductId(), product);
         }
-        
+
         return new ArrayList<>(allProductsCache);
     }
 
@@ -143,25 +156,25 @@ public class ProductService {
         if (query == null || query.trim().isEmpty()) {
             return getAllProducts();
         }
-        
+
         String normalizedQuery = query.trim().toLowerCase();
-        
+
         // Check search cache
         if (searchCache.containsKey(normalizedQuery)) {
             cacheHits++;
             IO.println("[ProductService] Search cache HIT for: " + query);
             return searchCache.get(normalizedQuery);
         }
-        
+
         cacheMisses++;
         IO.println("[ProductService] Executing search for: " + query);
-        
+
         // Use SQL-based search with LIKE (leverages idx_products_name_lower index)
         List<Product> results = productDAO.searchByName(query);
-        
+
         // Cache search results
         searchCache.put(normalizedQuery, results);
-        
+
         return results;
     }
 
@@ -197,20 +210,20 @@ public class ProductService {
     public List<Product> sortProductsByPrice(List<Product> products, boolean ascending) {
         PerformanceTimer timer = new PerformanceTimer();
         timer.start();
-        
+
         Comparator<Product> priceComparator = Comparator.comparingDouble(Product::getPrice);
         if (!ascending) {
             priceComparator = priceComparator.reversed();
         }
-        
+
         List<Product> sorted = products.stream()
                 .sorted(priceComparator)
                 .collect(Collectors.toList());
-        
+
         long duration = timer.end();
-        IO.println("[ProductService] Sorted " + products.size() + 
-                           " products by price in " + PerformanceTimer.formatDuration(duration));
-        
+        IO.println("[ProductService] Sorted " + products.size() +
+                " products by price in " + PerformanceTimer.formatDuration(duration));
+
         return sorted;
     }
 
@@ -219,13 +232,13 @@ public class ProductService {
      */
     public List<Product> sortProductsByName(List<Product> products, boolean ascending) {
         Comparator<Product> nameComparator = Comparator.comparing(
-            Product::getName, 
-            String.CASE_INSENSITIVE_ORDER
+                Product::getName,
+                String.CASE_INSENSITIVE_ORDER
         );
         if (!ascending) {
             nameComparator = nameComparator.reversed();
         }
-        
+
         return products.stream()
                 .sorted(nameComparator)
                 .collect(Collectors.toList());
@@ -239,7 +252,7 @@ public class ProductService {
         if (!ascending) {
             stockComparator = stockComparator.reversed();
         }
-        
+
         return products.stream()
                 .sorted(stockComparator)
                 .collect(Collectors.toList());
@@ -252,14 +265,14 @@ public class ProductService {
     public List<Product> quickSortByPrice(List<Product> products, boolean ascending) {
         PerformanceTimer timer = new PerformanceTimer();
         timer.start();
-        
+
         List<Product> sorted = new ArrayList<>(products);
         OptimizationUtils.quickSortByPrice(sorted, 0, sorted.size() - 1, ascending);
-        
+
         long duration = timer.end();
-        IO.println("[ProductService] QuickSort sorted " + products.size() + 
-                           " products in " + PerformanceTimer.formatDuration(duration));
-        
+        IO.println("[ProductService] QuickSort sorted " + products.size() +
+                " products in " + PerformanceTimer.formatDuration(duration));
+
         return sorted;
     }
 
@@ -331,8 +344,8 @@ public class ProductService {
         stats.put("allProductsCached", allProductsCache != null);
         stats.put("cacheHits", cacheHits);
         stats.put("cacheMisses", cacheMisses);
-        stats.put("hitRate", cacheHits + cacheMisses > 0 
-                ? (double) cacheHits / (cacheHits + cacheMisses) * 100 
+        stats.put("hitRate", cacheHits + cacheMisses > 0
+                ? (double) cacheHits / (cacheHits + cacheMisses) * 100
                 : 0);
         return stats;
     }

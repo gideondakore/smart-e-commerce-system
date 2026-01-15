@@ -1,4 +1,4 @@
-package com.amalitech.smartecommerce;
+package com.amalitech.smartecommerce.app;
 
 import java.io.IOException;
 import javafx.application.Application;
