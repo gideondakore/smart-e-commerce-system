@@ -1,0 +1,37 @@
+# 1. For backing up
+docker exec smart-ecommerce pg_dump -U spycon -d ecommerce_db > data/backup.sql
+
+# 2. For restoring backup
+docker exec -i smart-ecommerce psql -U spycon -d ecommerce_db < data/backup.sql
+
+
+# 1. Commit the current state of your container (with new tables)
+docker commit smart-ecommerce spycon27/smart-ecommerce:latest
+
+# 2. Push the updated image
+docker push spycon27/smart-ecommerce:latest
+
+
+without docker-compose.yml file, I have to do all these manually
+
+# Start PostgreSQL
+docker run -d \
+  --name smart-ecommerce \
+  -e POSTGRES_USER=spycon \
+  -e POSTGRES_PASSWORD=postgressPassword12345 \
+  -e POSTGRES_DB=ecommerce_db \
+  -p 5432:5432 \
+  postgres:latest
+
+# Start pgAdmin
+docker run -d \
+  --name pgadmin \
+  -e PGADMIN_DEFAULT_EMAIL=admin@admin.com \
+  -e PGADMIN_DEFAULT_PASSWORD=admin \
+  -p 5050:80 \
+  dpage/pgadmin4
+
+# Create a network manually
+docker network create ecommerce-network
+docker network connect ecommerce-network smart-ecommerce
+docker network connect ecommerce-network pgadmin
