@@ -50,7 +50,7 @@ public class ProductDAO {
     }
 
     public List<Product> findAll() throws SQLException {
-        IO.println("=======GETTING ALL PRODUCT=========");
+//        IO.println("=======GETTING ALL PRODUCT=========");
         List<Product> products = new ArrayList<>();
         String sql = "SELECT * FROM products";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();

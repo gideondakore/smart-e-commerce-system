@@ -105,7 +105,7 @@ public class ProductService {
             allProductsCache = productDAO.findAll();
             IO.println("Newly created data: " + allProductsCache);
         }
-        IO.println("ALL PROODUCTS FROM DB: " + allProductsCache);
+//        IO.println("ALL PROODUCTS FROM DB: " + allProductsCache);
         cacheTimestamp = now;
 
         // Populate individual cache
