@@ -55,6 +55,7 @@ public class LoginController {
                 default -> "/fxml/customer-dashboard.fxml";
             };
 
+            System.out.println("Loading dashboard: " + fxmlFile + " for role: " + user.getRole());
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
             Parent root = loader.load();
             
@@ -64,7 +65,11 @@ public class LoginController {
             stage.setTitle("Smart E-Commerce - " + user.getRole().toUpperCase());
             stage.centerOnScreen();
         } catch (IOException e) {
+            e.printStackTrace();
             showError("Failed to load dashboard: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Unexpected error: " + e.getMessage());
         }
     }
 

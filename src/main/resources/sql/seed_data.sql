@@ -5,18 +5,18 @@
 -- USERS (Admin, Manager, Customers)
 -- Password hashes are SHA-256 hashes:
 -- admin123 -> 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
--- manager123 -> 6ee4a469cd4e91053847f5d3fcb61dbcc91e8f0ef10be7748da4c4a1ba382d17
--- customer123 -> 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+-- manager123 -> 866485796cfa8d7c0cf7111640205b83076433547577511d81f8030ae99ecea5
+-- customer123 -> b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6
 -- ============================================
 INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES
 ('admin@shop.com', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Admin', 'User', 'admin'),
-('manager@shop.com', '6ee4a469cd4e91053847f5d3fcb61dbcc91e8f0ef10be7748da4c4a1ba382d17', 'Store', 'Manager', 'manager'),
-('customer@shop.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'John', 'Doe', 'customer'),
-('jane.smith@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Jane', 'Smith', 'customer'),
-('bob.wilson@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Bob', 'Wilson', 'customer'),
-('alice.brown@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Alice', 'Brown', 'customer'),
-('charlie.davis@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Charlie', 'Davis', 'customer'),
-('diana.miller@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Diana', 'Miller', 'customer');
+('manager@shop.com', '866485796cfa8d7c0cf7111640205b83076433547577511d81f8030ae99ecea5', 'Store', 'Manager', 'manager'),
+('customer@shop.com', 'b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6', 'John', 'Doe', 'customer'),
+('jane.smith@email.com', 'b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6', 'Jane', 'Smith', 'customer'),
+('bob.wilson@email.com', 'b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6', 'Bob', 'Wilson', 'customer'),
+('alice.brown@email.com', 'b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6', 'Alice', 'Brown', 'customer'),
+('charlie.davis@email.com', 'b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6', 'Charlie', 'Davis', 'customer'),
+('diana.miller@email.com', 'b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6', 'Diana', 'Miller', 'customer');
 
 -- ============================================
 -- CATEGORIES

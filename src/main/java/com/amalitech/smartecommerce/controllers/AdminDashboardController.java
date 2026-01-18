@@ -90,7 +90,82 @@ public class AdminDashboardController {
 
     @FXML
     private void handleAddProduct() {
-        showInfo("Add Product", "Product creation dialog would open here");
+        Dialog<Product> dialog = new Dialog<>();
+        dialog.setTitle("Add New Product");
+        dialog.setHeaderText("Enter Product Details");
+
+        ButtonType addButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
+
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Product Name");
+        TextField priceField = new TextField();
+        priceField.setPromptText("Price");
+        TextField stockField = new TextField();
+        stockField.setPromptText("Stock Quantity");
+        ComboBox<Category> categoryBox = new ComboBox<>();
+
+        try {
+            List<Category> categories = categoryDAO.findAll();
+            categoryBox.setItems(FXCollections.observableArrayList(categories));
+            categoryBox.setConverter(new javafx.util.StringConverter<Category>() {
+                @Override
+                public String toString(Category cat) {
+                    return cat == null ? "" : cat.getName();
+                }
+                @Override
+                public Category fromString(String string) {
+                    return null;
+                }
+            });
+            if (!categories.isEmpty()) categoryBox.getSelectionModel().selectFirst();
+        } catch (SQLException e) {
+            showError("Error", "Could not load categories");
+            return;
+        }
+
+        grid.add(new Label("Name:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Price:"), 0, 1);
+        grid.add(priceField, 1, 1);
+        grid.add(new Label("Stock:"), 0, 2);
+        grid.add(stockField, 1, 2);
+        grid.add(new Label("Category:"), 0, 3);
+        grid.add(categoryBox, 1, 3);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == addButtonType) {
+                try {
+                    String name = nameField.getText().trim();
+                    double price = Double.parseDouble(priceField.getText());
+                    int stock = Integer.parseInt(stockField.getText());
+                    Category cat = categoryBox.getValue();
+                    if (name.isEmpty() || cat == null) return null;
+                    return new Product(cat.getCategoryId(), name, price, stock);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(product -> {
+            try {
+                productService.createProduct(product);
+                loadData();
+                loadStats();
+                showInfo("Success", "Product added successfully");
+            } catch (SQLException e) {
+                showError("Error", e.getMessage());
+            }
+        });
     }
 
     @FXML
@@ -100,7 +175,84 @@ public class AdminDashboardController {
             showWarning("No Selection", "Please select a product to edit");
             return;
         }
-        showInfo("Edit Product", "Edit dialog for: " + selected.getName());
+
+        Dialog<Product> dialog = new Dialog<>();
+        dialog.setTitle("Edit Product");
+        dialog.setHeaderText("Edit Product: " + selected.getName());
+
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField nameField = new TextField(selected.getName());
+        TextField priceField = new TextField(String.valueOf(selected.getPrice()));
+        TextField stockField = new TextField(String.valueOf(selected.getStockQuantity()));
+        ComboBox<Category> categoryBox = new ComboBox<>();
+
+        try {
+            List<Category> categories = categoryDAO.findAll();
+            categoryBox.setItems(FXCollections.observableArrayList(categories));
+            categoryBox.setConverter(new javafx.util.StringConverter<Category>() {
+                @Override
+                public String toString(Category cat) {
+                    return cat == null ? "" : cat.getName();
+                }
+                @Override
+                public Category fromString(String string) {
+                    return null;
+                }
+            });
+            for (Category cat : categories) {
+                if (cat.getCategoryId() == selected.getCategoryId()) {
+                    categoryBox.getSelectionModel().select(cat);
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            showError("Error", "Could not load categories");
+            return;
+        }
+
+        grid.add(new Label("Name:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Price:"), 0, 1);
+        grid.add(priceField, 1, 1);
+        grid.add(new Label("Stock:"), 0, 2);
+        grid.add(stockField, 1, 2);
+        grid.add(new Label("Category:"), 0, 3);
+        grid.add(categoryBox, 1, 3);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                try {
+                    String name = nameField.getText().trim();
+                    double price = Double.parseDouble(priceField.getText());
+                    int stock = Integer.parseInt(stockField.getText());
+                    Category cat = categoryBox.getValue();
+                    if (name.isEmpty() || cat == null) return null;
+                    return new Product(selected.getProductId(), cat.getCategoryId(), name, price, stock);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(product -> {
+            try {
+                productService.updateProduct(product);
+                loadData();
+                showInfo("Success", "Product updated successfully");
+            } catch (SQLException e) {
+                showError("Error", e.getMessage());
+            }
+        });
     }
 
     @FXML
@@ -128,12 +280,76 @@ public class AdminDashboardController {
 
     @FXML
     private void handleManageUsers() {
-        showInfo("Manage Users", "User management panel would open here");
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("User Management");
+        dialog.setHeaderText("Manage System Users");
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        TableView<User> userTable = new TableView<>();
+        TableColumn<User, Integer> colUserId = new TableColumn<>("ID");
+        TableColumn<User, String> colEmail = new TableColumn<>("Email");
+        TableColumn<User, String> colName = new TableColumn<>("Name");
+        TableColumn<User, String> colRole = new TableColumn<>("Role");
+
+        colUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        colName.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getFullName()));
+        colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
+
+        colUserId.setPrefWidth(50);
+        colEmail.setPrefWidth(200);
+        colName.setPrefWidth(150);
+        colRole.setPrefWidth(100);
+
+        userTable.getColumns().addAll(colUserId, colEmail, colName, colRole);
+
+        try {
+            List<User> users = userDAO.findAll();
+            userTable.setItems(FXCollections.observableArrayList(users));
+        } catch (SQLException e) {
+            showError("Error", "Could not load users");
+            return;
+        }
+
+        userTable.setPrefHeight(400);
+        dialog.getDialogPane().setContent(userTable);
+        dialog.showAndWait();
     }
 
     @FXML
     private void handleManageCategories() {
-        showInfo("Manage Categories", "Category management panel would open here");
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Category Management");
+        dialog.setHeaderText("Manage Product Categories");
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        TableView<Category> categoryTable = new TableView<>();
+        TableColumn<Category, Integer> colCatId = new TableColumn<>("ID");
+        TableColumn<Category, String> colCatName = new TableColumn<>("Name");
+        TableColumn<Category, String> colCatDesc = new TableColumn<>("Description");
+
+        colCatId.setCellValueFactory(new PropertyValueFactory<>("categoryId"));
+        colCatName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colCatDesc.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        colCatId.setPrefWidth(50);
+        colCatName.setPrefWidth(150);
+        colCatDesc.setPrefWidth(300);
+
+        categoryTable.getColumns().addAll(colCatId, colCatName, colCatDesc);
+
+        try {
+            List<Category> categories = categoryDAO.findAll();
+            categoryTable.setItems(FXCollections.observableArrayList(categories));
+        } catch (SQLException e) {
+            showError("Error", "Could not load categories");
+            return;
+        }
+
+        categoryTable.setPrefHeight(400);
+        dialog.getDialogPane().setContent(categoryTable);
+        dialog.showAndWait();
     }
 
     @FXML

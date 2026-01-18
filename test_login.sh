@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "Testing password hashes..."
+echo ""
+echo "Expected hashes:"
+echo "admin123    -> 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+echo "manager123  -> 866485796cfa8d7c0cf7111640205b83076433547577511d81f8030ae99ecea5"
+echo "customer123 -> b041c0aeb35bb0fa4aa668ca5a920b590196fdaf9a00eb852c9b7f4d123cc6d6"
+echo ""
+echo "Database hashes:"
+docker exec smart-ecommerce psql -U spycon -d ecommerce_db -c "SELECT email, password_hash FROM users WHERE email IN ('admin@shop.com', 'manager@shop.com', 'customer@shop.com') ORDER BY role;"

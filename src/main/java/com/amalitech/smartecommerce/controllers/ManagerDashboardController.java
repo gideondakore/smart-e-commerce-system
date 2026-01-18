@@ -86,12 +86,35 @@ public class ManagerDashboardController {
             showWarning("No Selection", "Please select a product to update stock");
             return;
         }
-        showInfo("Update Stock", "Stock update dialog for: " + selected.getName());
+
+        TextInputDialog dialog = new TextInputDialog(String.valueOf(selected.getStockQuantity()));
+        dialog.setTitle("Update Stock");
+        dialog.setHeaderText("Update stock for: " + selected.getName());
+        dialog.setContentText("New stock quantity:");
+
+        dialog.showAndWait().ifPresent(input -> {
+            try {
+                int newStock = Integer.parseInt(input);
+                if (newStock < 0) {
+                    showWarning("Invalid Input", "Stock cannot be negative");
+                    return;
+                }
+                selected.setStockQuantity(newStock);
+                productService.updateProduct(selected);
+                loadData();
+                updateStats();
+                showInfo("Success", "Stock updated successfully");
+            } catch (NumberFormatException e) {
+                showWarning("Invalid Input", "Please enter a valid number");
+            } catch (SQLException e) {
+                showError("Error", e.getMessage());
+            }
+        });
     }
 
     @FXML
     private void handleViewOrders() {
-        showInfo("View Orders", "Orders panel would open here");
+        showInfo("View Orders", "Order management panel - Coming soon!");
     }
 
     @FXML

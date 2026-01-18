@@ -44,7 +44,7 @@
         
         <!-- Login Button -->
         <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" maxWidth="Infinity"
-                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 14; -fx-background-radius: 8; -fx-cursor: hand;">
+                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 14; -fx-background-radius: 8;">
             <cursor><javafx.scene.Cursor fx:constant="HAND"/></cursor>
         </Button>
         
