@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql # Persist database #NB: Change path (i.e postgres_data) to suit your OS
-      - ./data/backup.sql:/docker-entrypoint-initdb.d/backup.sql # Load initial data
+      # - ./data/backup.sql:/docker-entrypoint-initdb.d/backup.sql # Load initial data
     networks:
       - ecommerce-network
 

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+           fx:controller="com.amalitech.smartecommerce.controllers.LoginController"
+           style="-fx-background-color: linear-gradient(to bottom right, #667eea 0%, #764ba2 100%);">
+    
+    <VBox alignment="CENTER" spacing="25" maxWidth="400" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 5);">
+        <padding>
+            <Insets top="50" right="50" bottom="50" left="50"/>
+        </padding>
+        
+        <!-- Logo/Title -->
+        <VBox alignment="CENTER" spacing="10">
+            <Label text="🛒" style="-fx-font-size: 48px;"/>
+            <Label text="Smart E-Commerce" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/>
+            <Label text="Sign in to your account" style="-fx-font-size: 14px; -fx-text-fill: #6b7280;"/>
+        </VBox>
+        
+        <!-- Error Label -->
+        <Label fx:id="errorLabel" text="Error message" 
+               style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-background-color: #fee2e2; -fx-padding: 8 12; -fx-background-radius: 5;"
+               wrapText="true" maxWidth="Infinity" visible="false"/>
+        
+        <!-- Email Field -->
+        <VBox spacing="8">
+            <Label text="Email Address" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+            <TextField fx:id="emailField" promptText="Enter your email" 
+                       style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"
+                       onAction="#handleLogin"/>
+        </VBox>
+        
+        <!-- Password Field -->
+        <VBox spacing="8">
+            <Label text="Password" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+            <PasswordField fx:id="passwordField" promptText="Enter your password" 
+                          style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"
+                          onAction="#handleLogin"/>
+        </VBox>
+        
+        <!-- Login Button -->
+        <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" maxWidth="Infinity"
+                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 14; -fx-background-radius: 8; -fx-cursor: hand;">
+            <cursor><javafx.scene.Cursor fx:constant="HAND"/></cursor>
+        </Button>
+        
+        <!-- Demo Credentials -->
+        <VBox spacing="8" style="-fx-background-color: #f0f9ff; -fx-padding: 15; -fx-background-radius: 8;">
+            <Label text="Demo Credentials:" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1e40af;"/>
+            <Label text="Admin: admin@shop.com / admin123" style="-fx-font-size: 11px; -fx-text-fill: #3b82f6;"/>
+            <Label text="Manager: manager@shop.com / manager123" style="-fx-font-size: 11px; -fx-text-fill: #3b82f6;"/>
+            <Label text="Customer: customer@shop.com / customer123" style="-fx-font-size: 11px; -fx-text-fill: #3b82f6;"/>
+        </VBox>
+    </VBox>
+</StackPane>

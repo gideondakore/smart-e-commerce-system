@@ -10,53 +10,73 @@ import java.util.stream.Collectors;
 
 /**
  * Database setup utility for initializing the PostgreSQL database.
- * Reads schema.sql and seed_data.sql from resources and executes them.
+ * Automatically creates database if it doesn't exist and sets up all tables.
  */
 public class DatabaseSetup {
 
     private static final String BASE_URL = "jdbc:postgresql://localhost:5432/";
-    private static final String DB_NAME = System.getenv("DB_NAME");
-    private static final String USER = System.getenv("POSTGRES_USER");
-    private static final String PASSWORD = System.getenv("POSTGRES_PASSWORD");
+    private static final String DB_NAME = System.getenv("DB_NAME") != null ? System.getenv("DB_NAME") : "ecommerce_db";
+    private static final String USER = System.getenv("POSTGRES_USER") != null ? System.getenv("POSTGRES_USER") : "spycon";
+    private static final String PASSWORD = System.getenv("POSTGRES_PASSWORD") != null ? System.getenv("POSTGRES_PASSWORD") : "postgressPassword12345";
 
     public static void main(String[] args) {
-        IO.println("╔══════════════════════════════════════════════════════════════╗");
-        IO.println("║           SMART E-COMMERCE DATABASE SETUP                    ║");
-        IO.println("╚══════════════════════════════════════════════════════════════╝\n");
+        System.out.println("╔══════════════════════════════════════════════════════════════╗");
+        System.out.println("║           SMART E-COMMERCE DATABASE SETUP                    ║");
+        System.out.println("╚══════════════════════════════════════════════════════════════╝\n");
 
         try {
-
-            // 1. Connect to PostgreSQL Server
-            IO.println("📡 Connecting to PostgreSQL server...");
+            // 1. Create database if it doesn't exist
+            System.out.println("📡 Connecting to PostgreSQL server...");
+            createDatabaseIfNotExists();
             
-            // Try connecting to the database directly (it should exist)
-            IO.println("📦 Connecting to database '" + DB_NAME + "'...");
+            // 2. Connect to the database and setup tables
+            System.out.println("📦 Connecting to database '" + DB_NAME + "'...");
             try (Connection conn = DriverManager.getConnection(BASE_URL + DB_NAME, USER, PASSWORD);
                  Statement stmt = conn.createStatement()) {
 
-                // 2. Execute Schema SQL
-                IO.println("\n📋 Reading and executing schema.sql...");
+                // 3. Execute Schema SQL
+                System.out.println("\n📋 Reading and executing schema.sql...");
                 executeSqlFile(stmt, "/sql/schema.sql");
-                IO.println("✓ Schema created successfully!\n");
+                System.out.println("✓ Schema created successfully!\n");
 
-                // 3. Execute Seed Data SQL
-                IO.println("🌱 Reading and executing seed_data.sql...");
+                // 4. Execute Seed Data SQL
+                System.out.println("🌱 Reading and executing seed_data.sql...");
                 executeSqlFile(stmt, "/sql/seed_data.sql");
-                IO.println("✓ Seed data inserted successfully!\n");
+                System.out.println("✓ Seed data inserted successfully!\n");
 
-                // 4. Verify setup
-                IO.println("🔍 Verifying database setup...");
+                // 5. Verify setup
+                System.out.println("🔍 Verifying database setup...");
                 verifySetup(stmt);
 
-                IO.println("\n✅ Database setup completed successfully!");
-                IO.println("━".repeat(60));
-                IO.println("You can now run the application.");
+                System.out.println("\n✅ Database setup completed successfully!");
+                System.out.println("━".repeat(60));
+                System.out.println("You can now run the application.");
             }
 
         } catch (Exception e) {
             System.err.println("\n❌ Database setup failed: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
+        }
+    }
+
+    private static void createDatabaseIfNotExists() {
+        try (Connection conn = DriverManager.getConnection(BASE_URL + "postgres", USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            
+            // Check if database exists
+            var rs = stmt.executeQuery("SELECT 1 FROM pg_database WHERE datname = '" + DB_NAME + "'");
+            if (!rs.next()) {
+                System.out.println("🔨 Database '" + DB_NAME + "' does not exist. Creating...");
+                stmt.execute("CREATE DATABASE " + DB_NAME);
+                System.out.println("✓ Database '" + DB_NAME + "' created successfully!");
+            } else {
+                System.out.println("✓ Database '" + DB_NAME + "' already exists.");
+            }
+            rs.close();
+        } catch (Exception e) {
+            System.err.println("❌ Failed to create database: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -71,8 +91,6 @@ public class DatabaseSetup {
             sqlContent = reader.lines().collect(Collectors.joining("\n"));
         }
 
-        // PostgreSQL can execute multiple statements in one go with proper handling
-        // Split by semicolon but handle functions/triggers specially
         String[] statements = splitSqlStatements(sqlContent);
         
         int successCount = 0;
@@ -83,46 +101,53 @@ public class DatabaseSetup {
                     stmt.execute(sql);
                     successCount++;
                 } catch (Exception e) {
-                    // Log but continue for DROP IF EXISTS errors
-                    if (!e.getMessage().contains("does not exist")) {
-                        IO.println("  ⚠ Warning: " + e.getMessage().split("\n")[0]);
+                    if (!e.getMessage().contains("does not exist") && !e.getMessage().contains("already exists")) {
+                        System.out.println("  ⚠ Warning: " + e.getMessage().split("\n")[0]);
                     }
                 }
             }
         }
-        IO.println("  Executed " + successCount + " SQL statements");
+        System.out.println("  Executed " + successCount + " SQL statements");
     }
 
-    /**
-     * Splits SQL content into individual statements, handling functions and triggers.
-     */
     private static String[] splitSqlStatements(String sqlContent) {
-        // Handle PostgreSQL functions that contain semicolons within $$ blocks
-        StringBuilder processed = new StringBuilder();
+        sqlContent = sqlContent.replaceAll("--[^\n]*\n", "\n");
+        
+        java.util.List<String> statements = new java.util.ArrayList<>();
+        StringBuilder current = new StringBuilder();
         boolean inDollarQuote = false;
         
         for (int i = 0; i < sqlContent.length(); i++) {
             char c = sqlContent.charAt(i);
             
-            // Check for $$ dollar quoting
             if (c == '$' && i + 1 < sqlContent.length() && sqlContent.charAt(i + 1) == '$') {
                 inDollarQuote = !inDollarQuote;
-                processed.append(c);
+                current.append("$$");
+                i++;
             } else if (c == ';' && !inDollarQuote) {
-                processed.append(";\n---STATEMENT_SEPARATOR---\n");
+                String stmt = current.toString().trim();
+                if (!stmt.isEmpty()) {
+                    statements.add(stmt);
+                }
+                current = new StringBuilder();
             } else {
-                processed.append(c);
+                current.append(c);
             }
         }
         
-        return processed.toString().split("---STATEMENT_SEPARATOR---");
+        String lastStmt = current.toString().trim();
+        if (!lastStmt.isEmpty()) {
+            statements.add(lastStmt);
+        }
+        
+        return statements.toArray(new String[0]);
     }
 
     private static void verifySetup(Statement stmt) throws Exception {
         String[] tables = {"users", "categories", "products", "orders", "order_items", "reviews", "inventory_logs"};
         
-        IO.println("\n  Table                   Row Count");
-        IO.println("  " + "─".repeat(40));
+        System.out.println("\n  Table                   Row Count");
+        System.out.println("  " + "─".repeat(40));
         
         for (String table : tables) {
             try {
@@ -141,7 +166,7 @@ public class DatabaseSetup {
      * Resets the database by dropping all tables and recreating them.
      */
     public static void resetDatabase() {
-        IO.println("⚠ Resetting database - all data will be lost!");
+        System.out.println("⚠ Resetting database - all data will be lost!");
         main(new String[]{});
     }
 }

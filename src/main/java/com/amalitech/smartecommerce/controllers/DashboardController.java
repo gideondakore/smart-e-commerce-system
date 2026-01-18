@@ -61,7 +61,6 @@ public class DashboardController {
     private Map<Product, Integer> cartMap;
 
     public void initialize() {
-        IO.println("INITIALIZE IS CALLED");
         productService = new ProductService();
         orderService = new OrderService();
         categoryDAO = new CategoryDAO();
@@ -98,11 +97,11 @@ public class DashboardController {
             timer.start();
             List<Product> products = productService.getAllProducts();
             long duration = timer.end();
-            IO.println("Load Data Time: " + PerformanceTimer.formatDuration(duration));
+            System.out.println("Load Data Time: " + PerformanceTimer.formatDuration(duration));
 
             productList.setAll(products);
         } catch (SQLException e) {
-            IO.println("Message from Getting Data from DB: " + e.getMessage());
+            System.out.println("Message from Getting Data from DB: " + e.getMessage());
             showError("Error loading data", e.getMessage());
         }
     }
@@ -172,7 +171,7 @@ public class DashboardController {
             timer.start();
             List<Product> results = productService.searchProductsByName(query);
             long duration = timer.end();
-            IO.println("Search Time: " + PerformanceTimer.formatDuration(duration));
+            System.out.println("Search Time: " + PerformanceTimer.formatDuration(duration));
 
             productList.setAll(results);
         } catch (SQLException e) {

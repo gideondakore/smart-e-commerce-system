@@ -3,16 +3,20 @@
 
 -- ============================================
 -- USERS (Admin, Manager, Customers)
+-- Password hashes are SHA-256 hashes:
+-- admin123 -> 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
+-- manager123 -> 6ee4a469cd4e91053847f5d3fcb61dbcc91e8f0ef10be7748da4c4a1ba382d17
+-- customer123 -> 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
 -- ============================================
 INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES
-('admin@ecommerce.com', 'hashed_admin_password_123', 'Admin', 'User', 'admin'),
-('manager@ecommerce.com', 'hashed_manager_password_123', 'Store', 'Manager', 'manager'),
-('john.doe@email.com', 'hashed_password_456', 'John', 'Doe', 'customer'),
-('jane.smith@email.com', 'hashed_password_789', 'Jane', 'Smith', 'customer'),
-('bob.wilson@email.com', 'hashed_password_012', 'Bob', 'Wilson', 'customer'),
-('alice.brown@email.com', 'hashed_password_345', 'Alice', 'Brown', 'customer'),
-('charlie.davis@email.com', 'hashed_password_678', 'Charlie', 'Davis', 'customer'),
-('diana.miller@email.com', 'hashed_password_901', 'Diana', 'Miller', 'customer');
+('admin@shop.com', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Admin', 'User', 'admin'),
+('manager@shop.com', '6ee4a469cd4e91053847f5d3fcb61dbcc91e8f0ef10be7748da4c4a1ba382d17', 'Store', 'Manager', 'manager'),
+('customer@shop.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'John', 'Doe', 'customer'),
+('jane.smith@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Jane', 'Smith', 'customer'),
+('bob.wilson@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Bob', 'Wilson', 'customer'),
+('alice.brown@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Alice', 'Brown', 'customer'),
+('charlie.davis@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Charlie', 'Davis', 'customer'),
+('diana.miller@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'Diana', 'Miller', 'customer');
 
 -- ============================================
 -- CATEGORIES
