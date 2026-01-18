@@ -9,11 +9,12 @@ import java.util.List;
 public class CategoryDAO {
 
   public void create(Category category) throws SQLException {
-    String sql = "INSERT INTO categories (name) VALUES (?)";
+    String sql = "INSERT INTO categories (name, description) VALUES (?, ?)";
     try (Connection conn = DatabaseConnection.getInstance().getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
       stmt.setString(1, category.getName());
+      stmt.setString(2, category.getDescription());
       stmt.executeUpdate();
 
       try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -54,12 +55,13 @@ public class CategoryDAO {
   }
 
   public void update(Category category) throws SQLException {
-    String sql = "UPDATE categories SET name = ? WHERE category_id = ?";
+    String sql = "UPDATE categories SET name = ?, description = ? WHERE category_id = ?";
     try (Connection conn = DatabaseConnection.getInstance().getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
       stmt.setString(1, category.getName());
-      stmt.setInt(2, category.getCategoryId());
+      stmt.setString(2, category.getDescription());
+      stmt.setInt(3, category.getCategoryId());
       stmt.executeUpdate();
     }
   }
@@ -75,6 +77,10 @@ public class CategoryDAO {
   }
 
   private Category mapResultSetToCategory(ResultSet rs) throws SQLException {
-    return new Category(rs.getInt("category_id"), rs.getString("name"));
+    return new Category(
+      rs.getInt("category_id"), 
+      rs.getString("name"),
+      rs.getString("description")
+    );
   }
 }
