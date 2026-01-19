@@ -299,6 +299,7 @@ public class AdminDashboardController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @FXML
     private void handleManageUsers() {
         Dialog<Void> dialog = new Dialog<>();
@@ -366,6 +367,7 @@ public class AdminDashboardController {
         dialog.showAndWait();
     }
 
+    @SuppressWarnings("unchecked")
     @FXML
     private void handleManageCategories() {
         Dialog<Void> dialog = new Dialog<>();
@@ -460,6 +462,7 @@ public class AdminDashboardController {
         dialog.showAndWait();
     }
 
+    @SuppressWarnings("unchecked")
     @FXML
     private void handleManageOrders() {
         try {
@@ -528,6 +531,7 @@ public class AdminDashboardController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void showOrderItems(int orderId) {
         try {
             List<com.amalitech.smartecommerce.models.OrderItem> items = orderService.getOrderItems(orderId);
@@ -708,6 +712,7 @@ public class AdminDashboardController {
         dialog.showAndWait();
     }
 
+    @SuppressWarnings("unchecked")
     @FXML
     private void handleViewInventoryLogs() {
         try {

@@ -172,6 +172,7 @@ public class CustomerDashboardController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @FXML
     private void handleViewOrders() {
         try {
@@ -233,6 +234,7 @@ public class CustomerDashboardController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void showOrderItems(int orderId) {
         try {
             java.util.List<com.amalitech.smartecommerce.models.OrderItem> items = orderService.getOrderItems(orderId);
@@ -270,6 +272,7 @@ public class CustomerDashboardController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleEditOrder(int orderId) {
         try {
             java.util.List<com.amalitech.smartecommerce.models.OrderItem> items = orderService.getOrderItems(orderId);

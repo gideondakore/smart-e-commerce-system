@@ -117,6 +117,7 @@ public class ManagerDashboardController {
         });
     }
 
+    @SuppressWarnings("unchecked")
     @FXML
     private void handleViewOrders() {
         try {
@@ -185,6 +186,7 @@ public class ManagerDashboardController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void showOrderItems(int orderId) {
         try {
             List<com.amalitech.smartecommerce.models.OrderItem> items = orderService.getOrderItems(orderId);
@@ -377,6 +379,7 @@ public class ManagerDashboardController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @FXML
     private void handleManageCategories() {
         Dialog<Void> dialog = new Dialog<>();

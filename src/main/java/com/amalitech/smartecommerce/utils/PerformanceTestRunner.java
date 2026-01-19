@@ -1,6 +1,5 @@
 package com.amalitech.smartecommerce.utils;
 
-import com.amalitech.smartecommerce.dao.ProductDAO;
 import com.amalitech.smartecommerce.models.Product;
 import com.amalitech.smartecommerce.services.ProductService;
 
@@ -32,6 +31,7 @@ public class PerformanceTestRunner {
         runner.runAllTests();
     }
 
+    
     public void runAllTests() {
         System.out.println("╔══════════════════════════════════════════════════════════════╗");
         System.out.println("║         SMART E-COMMERCE PERFORMANCE TEST SUITE              ║");
@@ -39,7 +39,6 @@ public class PerformanceTestRunner {
 
         try {
             ProductService productService = new ProductService();
-            ProductDAO productDAO = new ProductDAO();
 
             // 1. Setup: Populate test data
             System.out.println("📦 Phase 1: Data Population");

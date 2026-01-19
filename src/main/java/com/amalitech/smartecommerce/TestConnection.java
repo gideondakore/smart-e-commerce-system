@@ -18,7 +18,7 @@ public class TestConnection {
         IO.println("PASSWORD: " + password);
         
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
-            IO.println("✅ Database connection successful!");
+            IO.println("✅ Database connection successful! " + conn.hashCode());
         } catch (Exception e) {
             IO.println("❌ Connection failed: " + e.getMessage());
             e.printStackTrace();
