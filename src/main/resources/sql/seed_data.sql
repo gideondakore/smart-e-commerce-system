@@ -29,7 +29,8 @@ INSERT INTO categories (name, description) VALUES
 ('Sports & Outdoors', 'Sports equipment and outdoor gear'),
 ('Beauty & Health', 'Cosmetics, skincare, and health products'),
 ('Toys & Games', 'Toys, board games, and video games'),
-('Office Supplies', 'Stationery and office equipment');
+('Office Supplies', 'Stationery and office equipment'),
+('Others', 'Products that don''t fit into other categories');
 
 -- ============================================
 -- PRODUCTS (Multiple per category for testing)

@@ -352,7 +352,9 @@ public class AdminDashboardController {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Category Management");
         dialog.setHeaderText("Manage Product Categories");
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        
+        ButtonType editButton = new ButtonType("Edit", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(editButton, ButtonType.CLOSE);
 
         TableView<Category> categoryTable = new TableView<>();
         TableColumn<Category, Integer> colCatId = new TableColumn<>("ID");
@@ -379,6 +381,56 @@ public class AdminDashboardController {
 
         categoryTable.setPrefHeight(400);
         dialog.getDialogPane().setContent(categoryTable);
+        
+        dialog.setResultConverter(btn -> {
+            if (btn == editButton) {
+                Category selected = categoryTable.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    Dialog<Category> editDialog = new Dialog<>();
+                    editDialog.setTitle("Edit Category");
+                    editDialog.setHeaderText("Edit: " + selected.getName());
+                    ButtonType saveBtn = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+                    editDialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
+                    
+                    javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+                    grid.setHgap(10);
+                    grid.setVgap(10);
+                    grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+                    
+                    TextField nameField = new TextField(selected.getName());
+                    TextField descField = new TextField(selected.getDescription());
+                    
+                    grid.add(new Label("Name:"), 0, 0);
+                    grid.add(nameField, 1, 0);
+                    grid.add(new Label("Description:"), 0, 1);
+                    grid.add(descField, 1, 1);
+                    
+                    editDialog.getDialogPane().setContent(grid);
+                    
+                    editDialog.setResultConverter(b -> {
+                        if (b == saveBtn) {
+                            selected.setName(nameField.getText().trim());
+                            selected.setDescription(descField.getText().trim());
+                            return selected;
+                        }
+                        return null;
+                    });
+                    
+                    editDialog.showAndWait().ifPresent(cat -> {
+                        try {
+                            categoryDAO.update(cat);
+                            showInfo("Success", "Category updated");
+                            categoryTable.getItems().clear();
+                            categoryTable.getItems().addAll(categoryDAO.findAll());
+                        } catch (SQLException e) {
+                            showError("Error", e.getMessage());
+                        }
+                    });
+                }
+            }
+            return null;
+        });
+        
         dialog.showAndWait();
     }
 
