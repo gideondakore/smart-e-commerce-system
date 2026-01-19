@@ -35,10 +35,6 @@ public class LoginController {
 
         try {
             Optional<User> userOpt = authService.login(email, password);
-//             Login attempt for email: diana.miller@email.com
-// User found: Optional[User{id=8, email='diana.miller@email.com', name='Diana Miller', role='customer'}]
-// Loading dashboard: /fxml/customer-dashboard.fxml for role: customer
-//IsPresent: true
 
             System.out.println("Login attempt for email: " + email);
             System.out.println("User found: " + userOpt);
