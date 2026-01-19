@@ -3,6 +3,7 @@ package com.amalitech.smartecommerce.dao;
 import com.amalitech.smartecommerce.models.Order;
 import com.amalitech.smartecommerce.models.OrderItem;
 import com.amalitech.smartecommerce.models.Product;
+import com.amalitech.smartecommerce.models.InventoryLog.ChangeType;
 import com.amalitech.smartecommerce.utils.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
@@ -76,6 +77,9 @@ public class OrderDAO {
         itemStmt.setDouble(4, product.getPrice());
         itemStmt.addBatch();
 
+        // Get current stock
+        int currentStock = product.getStockQuantity();
+
         // Update Stock (Immediate execution to check constraints)
         stockStmt.setInt(1, quantity);
         stockStmt.setInt(2, product.getProductId());
@@ -84,6 +88,19 @@ public class OrderDAO {
 
         if (stockRows == 0) {
           throw new SQLException("Insufficient stock for product: " + product.getName());
+        }
+
+        // Log inventory change
+        String logSQL = "INSERT INTO inventory_logs (product_id, change_amount, previous_quantity, new_quantity, change_type, reason, performed_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement logStmt = conn.prepareStatement(logSQL)) {
+          logStmt.setInt(1, product.getProductId());
+          logStmt.setInt(2, -quantity);
+          logStmt.setInt(3, currentStock);
+          logStmt.setInt(4, currentStock - quantity);
+          logStmt.setString(5, ChangeType.SALE.getValue());
+          logStmt.setString(6, "Order #" + orderId);
+          logStmt.setInt(7, userId);
+          logStmt.executeUpdate();
         }
       }
 

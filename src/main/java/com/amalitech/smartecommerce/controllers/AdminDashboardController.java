@@ -1,8 +1,10 @@
 package com.amalitech.smartecommerce.controllers;
 
 import com.amalitech.smartecommerce.dao.CategoryDAO;
+import com.amalitech.smartecommerce.dao.InventoryLogDAO;
 import com.amalitech.smartecommerce.dao.UserDAO;
 import com.amalitech.smartecommerce.models.Category;
+import com.amalitech.smartecommerce.models.InventoryLog;
 import com.amalitech.smartecommerce.models.Product;
 import com.amalitech.smartecommerce.models.User;
 import com.amalitech.smartecommerce.services.OrderService;
@@ -41,6 +43,7 @@ public class AdminDashboardController {
     private final OrderService orderService = new OrderService();
     private final UserDAO userDAO = new UserDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
+    private final InventoryLogDAO inventoryLogDAO = new InventoryLogDAO();
     private ObservableList<Product> productList;
 
     @FXML
@@ -703,6 +706,60 @@ public class AdminDashboardController {
         dialog.getDialogPane().setContent(scrollPane);
         dialog.getDialogPane().setPrefSize(750, 550);
         dialog.showAndWait();
+    }
+
+    @FXML
+    private void handleViewInventoryLogs() {
+        try {
+            List<InventoryLog> logs = inventoryLogDAO.findRecent(100);
+            
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Inventory Logs");
+            dialog.setHeaderText("Recent Inventory Changes (Last 100)");
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            
+            TableView<InventoryLog> logTable = new TableView<>();
+            TableColumn<InventoryLog, Integer> colLogId = new TableColumn<>("Log ID");
+            TableColumn<InventoryLog, String> colProduct = new TableColumn<>("Product");
+            TableColumn<InventoryLog, Integer> colChange = new TableColumn<>("Change");
+            TableColumn<InventoryLog, Integer> colPrevQty = new TableColumn<>("Previous");
+            TableColumn<InventoryLog, Integer> colNewQty = new TableColumn<>("New");
+            TableColumn<InventoryLog, String> colType = new TableColumn<>("Type");
+            TableColumn<InventoryLog, String> colDate = new TableColumn<>("Date");
+            TableColumn<InventoryLog, String> colPerformedBy = new TableColumn<>("Performed By");
+            
+            colLogId.setCellValueFactory(new PropertyValueFactory<>("logId"));
+            colProduct.setCellValueFactory(new PropertyValueFactory<>("productName"));
+            colChange.setCellValueFactory(new PropertyValueFactory<>("changeAmount"));
+            colPrevQty.setCellValueFactory(new PropertyValueFactory<>("previousQuantity"));
+            colNewQty.setCellValueFactory(new PropertyValueFactory<>("newQuantity"));
+            colType.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getChangeType().getValue()));
+            colDate.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleStringProperty(
+                    cellData.getValue().getChangeDate() != null ? 
+                    cellData.getValue().getChangeDate().toString() : ""));
+            colPerformedBy.setCellValueFactory(new PropertyValueFactory<>("performedByName"));
+            
+            colLogId.setPrefWidth(60);
+            colProduct.setPrefWidth(150);
+            colChange.setPrefWidth(70);
+            colPrevQty.setPrefWidth(70);
+            colNewQty.setPrefWidth(70);
+            colType.setPrefWidth(90);
+            colDate.setPrefWidth(150);
+            colPerformedBy.setPrefWidth(120);
+            
+            logTable.getColumns().addAll(colLogId, colProduct, colChange, colPrevQty, colNewQty, colType, colDate, colPerformedBy);
+            logTable.setItems(FXCollections.observableArrayList(logs));
+            logTable.setPrefHeight(500);
+            
+            dialog.getDialogPane().setContent(logTable);
+            dialog.getDialogPane().setPrefWidth(900);
+            dialog.showAndWait();
+        } catch (SQLException e) {
+            showError("Error", "Could not load inventory logs: " + e.getMessage());
+        }
     }
 
     @FXML

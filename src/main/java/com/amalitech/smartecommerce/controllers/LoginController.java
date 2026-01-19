@@ -36,15 +36,10 @@ public class LoginController {
         try {
             Optional<User> userOpt = authService.login(email, password);
 
-            System.out.println("Login attempt for email: " + email);
-            System.out.println("User found: " + userOpt);
-            System.out.println("IsPresent: " + userOpt.isPresent());
             if (userOpt.isPresent()) {  
 
                 User user = userOpt.get();
-                System.out.println("User: " + user);
                 SessionManager.getInstance().setCurrentUser(user);
-                System.out.println("Current User set in SessionManager: " + SessionManager.getInstance().getCurrentUser());
                 navigateToDashboard(user);
             } else {
                 showError("Invalid email or password");

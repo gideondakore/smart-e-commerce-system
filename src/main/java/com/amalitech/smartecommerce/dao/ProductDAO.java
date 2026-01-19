@@ -1,6 +1,7 @@
 package com.amalitech.smartecommerce.dao;
 
 import com.amalitech.smartecommerce.models.Product;
+import com.amalitech.smartecommerce.models.InventoryLog.ChangeType;
 import com.amalitech.smartecommerce.utils.DatabaseConnection;
 
 import java.sql.*;
@@ -29,6 +30,20 @@ public class ProductDAO {
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     product.setProductId(generatedKeys.getInt(1));
+                    
+                    // Log initial stock
+                    if (product.getStockQuantity() > 0) {
+                        String logSQL = "INSERT INTO inventory_logs (product_id, change_amount, previous_quantity, new_quantity, change_type, reason) VALUES (?, ?, ?, ?, ?, ?)";
+                        try (PreparedStatement logStmt = conn.prepareStatement(logSQL)) {
+                            logStmt.setInt(1, product.getProductId());
+                            logStmt.setInt(2, product.getStockQuantity());
+                            logStmt.setInt(3, 0);
+                            logStmt.setInt(4, product.getStockQuantity());
+                            logStmt.setString(5, ChangeType.RESTOCK.getValue());
+                            logStmt.setString(6, "Initial stock");
+                            logStmt.executeUpdate();
+                        }
+                    }
                 }
             }
         }
@@ -188,23 +203,62 @@ public class ProductDAO {
     }
 
     public void update(Product product) throws SQLException {
-        String sql =
-                "UPDATE products SET category_id = ?, name = ?, price = ?, stock_quantity = ? WHERE"
-                        + " product_id = ?";
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            if (product.getCategoryId() > 0) {
-                stmt.setInt(1, product.getCategoryId());
-            } else {
-                stmt.setNull(1, Types.INTEGER);
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Get current stock
+            int oldStock = 0;
+            String getStockSQL = "SELECT stock_quantity FROM products WHERE product_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(getStockSQL)) {
+                stmt.setInt(1, product.getProductId());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        oldStock = rs.getInt("stock_quantity");
+                    }
+                }
             }
-            stmt.setString(2, product.getName());
-            stmt.setDouble(3, product.getPrice());
-            stmt.setInt(4, product.getStockQuantity());
-            stmt.setInt(5, product.getProductId());
-
-            stmt.executeUpdate();
+            
+            // Update product
+            String sql = "UPDATE products SET category_id = ?, name = ?, price = ?, stock_quantity = ? WHERE product_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                if (product.getCategoryId() > 0) {
+                    stmt.setInt(1, product.getCategoryId());
+                } else {
+                    stmt.setNull(1, Types.INTEGER);
+                }
+                stmt.setString(2, product.getName());
+                stmt.setDouble(3, product.getPrice());
+                stmt.setInt(4, product.getStockQuantity());
+                stmt.setInt(5, product.getProductId());
+                stmt.executeUpdate();
+            }
+            
+            // Log stock change if different
+            if (oldStock != product.getStockQuantity()) {
+                int change = product.getStockQuantity() - oldStock;
+                ChangeType changeType = change > 0 ? ChangeType.RESTOCK : ChangeType.ADJUSTMENT;
+                String reason = change > 0 ? "Stock replenished" : "Stock adjusted";
+                
+                String logSQL = "INSERT INTO inventory_logs (product_id, change_amount, previous_quantity, new_quantity, change_type, reason) VALUES (?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement logStmt = conn.prepareStatement(logSQL)) {
+                    logStmt.setInt(1, product.getProductId());
+                    logStmt.setInt(2, change);
+                    logStmt.setInt(3, oldStock);
+                    logStmt.setInt(4, product.getStockQuantity());
+                    logStmt.setString(5, changeType.getValue());
+                    logStmt.setString(6, reason);
+                    logStmt.executeUpdate();
+                }
+            }
+            
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) conn.rollback();
+            throw e;
+        } finally {
+            if (conn != null) conn.setAutoCommit(true);
         }
     }
 
