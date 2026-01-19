@@ -6,8 +6,6 @@ import java.sql.DriverManager;
 public class TestConnection {
     public static void main(String[] args) {
 
-
-
         String url = "jdbc:postgresql://localhost:5432/" + System.getenv("DB_NAME");
         String user = System.getenv("POSTGRES_USER");
         String password = System.getenv("POSTGRES_PASSWORD");
