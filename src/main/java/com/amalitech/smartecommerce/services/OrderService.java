@@ -2,6 +2,7 @@ package com.amalitech.smartecommerce.services;
 
 import com.amalitech.smartecommerce.dao.OrderDAO;
 import com.amalitech.smartecommerce.models.Order;
+import com.amalitech.smartecommerce.models.OrderItem;
 import com.amalitech.smartecommerce.models.Product;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,5 +35,9 @@ public class OrderService {
 
   public void updateOrderStatus(int orderId, String status) throws SQLException {
     orderDAO.updateStatus(orderId, status);
+  }
+
+  public List<OrderItem> getOrderItems(int orderId) throws SQLException {
+    return orderDAO.getOrderItems(orderId);
   }
 }

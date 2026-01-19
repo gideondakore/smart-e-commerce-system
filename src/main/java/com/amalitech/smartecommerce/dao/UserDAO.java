@@ -169,6 +169,16 @@ public class UserDAO {
         return 0;
     }
 
+    public void updateRole(int userId, String role) throws SQLException {
+        String sql = "UPDATE users SET role = ? WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, role);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        }
+    }
+
     /**
      * Maps a ResultSet row to a User object.
      */

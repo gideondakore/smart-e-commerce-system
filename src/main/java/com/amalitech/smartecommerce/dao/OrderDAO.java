@@ -1,6 +1,7 @@
 package com.amalitech.smartecommerce.dao;
 
 import com.amalitech.smartecommerce.models.Order;
+import com.amalitech.smartecommerce.models.OrderItem;
 import com.amalitech.smartecommerce.models.Product;
 import com.amalitech.smartecommerce.utils.DatabaseConnection;
 import java.sql.*;
@@ -164,5 +165,30 @@ public class OrderDAO {
       stmt.setInt(2, orderId);
       stmt.executeUpdate();
     }
+  }
+
+  public List<OrderItem> getOrderItems(int orderId) throws SQLException {
+    List<OrderItem> items = new ArrayList<>();
+    String sql = "SELECT oi.*, p.name as product_name FROM order_items oi " +
+                 "JOIN products p ON oi.product_id = p.product_id WHERE oi.order_id = ?";
+    
+    try (Connection conn = DatabaseConnection.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setInt(1, orderId);
+      try (ResultSet rs = stmt.executeQuery()) {
+        while (rs.next()) {
+          OrderItem item = new OrderItem(
+            rs.getInt("product_id"),
+            rs.getInt("quantity"),
+            rs.getDouble("price_at_purchase")
+          );
+          item.setId(rs.getInt("id"));
+          item.setOrderId(orderId);
+          item.setProductName(rs.getString("product_name"));
+          items.add(item);
+        }
+      }
+    }
+    return items;
   }
 }

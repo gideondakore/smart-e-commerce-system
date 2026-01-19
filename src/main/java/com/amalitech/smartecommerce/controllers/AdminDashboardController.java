@@ -285,7 +285,9 @@ public class AdminDashboardController {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("User Management");
         dialog.setHeaderText("Manage System Users");
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        
+        ButtonType changeRoleButton = new ButtonType("Change Role", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(changeRoleButton, ButtonType.CLOSE);
 
         TableView<User> userTable = new TableView<>();
         TableColumn<User, Integer> colUserId = new TableColumn<>("ID");
@@ -316,6 +318,32 @@ public class AdminDashboardController {
 
         userTable.setPrefHeight(400);
         dialog.getDialogPane().setContent(userTable);
+        
+        dialog.setResultConverter(btn -> {
+            if (btn == changeRoleButton) {
+                User selected = userTable.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    List<String> roles = java.util.Arrays.asList("admin", "manager", "customer");
+                    ChoiceDialog<String> roleDialog = new ChoiceDialog<>(selected.getRole(), roles);
+                    roleDialog.setTitle("Change User Role");
+                    roleDialog.setHeaderText("User: " + selected.getEmail());
+                    roleDialog.setContentText("Select new role:");
+                    
+                    roleDialog.showAndWait().ifPresent(role -> {
+                        try {
+                            userDAO.updateRole(selected.getUserId(), role);
+                            showInfo("Success", "User role updated to " + role);
+                            userTable.getItems().clear();
+                            userTable.getItems().addAll(userDAO.findAll());
+                        } catch (SQLException e) {
+                            showError("Error", e.getMessage());
+                        }
+                    });
+                }
+            }
+            return null;
+        });
+        
         dialog.showAndWait();
     }
 
@@ -364,7 +392,8 @@ public class AdminDashboardController {
             dialog.setHeaderText("All Orders");
             
             ButtonType updateButton = new ButtonType("Update Status", ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().addAll(updateButton, ButtonType.CLOSE);
+            ButtonType viewItemsButton = new ButtonType("View Items", ButtonBar.ButtonData.LEFT);
+            dialog.getDialogPane().getButtonTypes().addAll(updateButton, viewItemsButton, ButtonType.CLOSE);
             
             TableView<com.amalitech.smartecommerce.models.Order> orderTable = new TableView<>();
             TableColumn<com.amalitech.smartecommerce.models.Order, Integer> colOrderId = new TableColumn<>("Order ID");
@@ -393,24 +422,24 @@ public class AdminDashboardController {
             dialog.getDialogPane().setContent(orderTable);
             
             dialog.setResultConverter(dialogButton -> {
-                if (dialogButton == updateButton) {
-                    com.amalitech.smartecommerce.models.Order selected = orderTable.getSelectionModel().getSelectedItem();
-                    if (selected != null) {
-                        List<String> choices = java.util.Arrays.asList("pending", "processing", "shipped", "delivered", "cancelled");
-                        ChoiceDialog<String> statusDialog = new ChoiceDialog<>(selected.getStatus(), choices);
-                        statusDialog.setTitle("Update Order Status");
-                        statusDialog.setHeaderText("Order #" + selected.getOrderId());
-                        statusDialog.setContentText("Select new status:");
-                        
-                        statusDialog.showAndWait().ifPresent(status -> {
-                            try {
-                                orderService.updateOrderStatus(selected.getOrderId(), status);
-                                showInfo("Success", "Order status updated");
-                            } catch (SQLException e) {
-                                showError("Error", e.getMessage());
-                            }
-                        });
-                    }
+                com.amalitech.smartecommerce.models.Order selected = orderTable.getSelectionModel().getSelectedItem();
+                if (dialogButton == updateButton && selected != null) {
+                    List<String> choices = java.util.Arrays.asList("pending", "processing", "shipped", "delivered", "cancelled");
+                    ChoiceDialog<String> statusDialog = new ChoiceDialog<>(selected.getStatus(), choices);
+                    statusDialog.setTitle("Update Order Status");
+                    statusDialog.setHeaderText("Order #" + selected.getOrderId());
+                    statusDialog.setContentText("Select new status:");
+                    
+                    statusDialog.showAndWait().ifPresent(status -> {
+                        try {
+                            orderService.updateOrderStatus(selected.getOrderId(), status);
+                            showInfo("Success", "Order status updated");
+                        } catch (SQLException e) {
+                            showError("Error", e.getMessage());
+                        }
+                    });
+                } else if (dialogButton == viewItemsButton && selected != null) {
+                    showOrderItems(selected.getOrderId());
                 }
                 return null;
             });
@@ -418,6 +447,43 @@ public class AdminDashboardController {
             dialog.showAndWait();
         } catch (SQLException e) {
             showError("Error", "Could not load orders: " + e.getMessage());
+        }
+    }
+
+    private void showOrderItems(int orderId) {
+        try {
+            List<com.amalitech.smartecommerce.models.OrderItem> items = orderService.getOrderItems(orderId);
+            
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Order Items");
+            dialog.setHeaderText("Order #" + orderId + " - Items");
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            
+            TableView<com.amalitech.smartecommerce.models.OrderItem> itemTable = new TableView<>();
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, String> colName = new TableColumn<>("Product");
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, Integer> colQty = new TableColumn<>("Quantity");
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, Double> colPrice = new TableColumn<>("Price");
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, Double> colSubtotal = new TableColumn<>("Subtotal");
+            
+            colName.setCellValueFactory(new PropertyValueFactory<>("productName"));
+            colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+            colPrice.setCellValueFactory(new PropertyValueFactory<>("priceAtPurchase"));
+            colSubtotal.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleDoubleProperty(cellData.getValue().getQuantity() * cellData.getValue().getPriceAtPurchase()).asObject());
+            
+            colName.setPrefWidth(200);
+            colQty.setPrefWidth(80);
+            colPrice.setPrefWidth(100);
+            colSubtotal.setPrefWidth(100);
+            
+            itemTable.getColumns().addAll(colName, colQty, colPrice, colSubtotal);
+            itemTable.setItems(FXCollections.observableArrayList(items));
+            itemTable.setPrefHeight(300);
+            
+            dialog.getDialogPane().setContent(itemTable);
+            dialog.showAndWait();
+        } catch (Exception e) {
+            showError("Error", "Could not load order items: " + e.getMessage());
         }
     }
 

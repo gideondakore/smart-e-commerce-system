@@ -6,6 +6,7 @@ public class OrderItem {
   private int productId;
   private int quantity;
   private double priceAtPurchase;
+  private String productName;
 
   public OrderItem(int productId, int quantity, double priceAtPurchase) {
     this.productId = productId;
@@ -51,5 +52,13 @@ public class OrderItem {
 
   public void setPriceAtPurchase(double priceAtPurchase) {
     this.priceAtPurchase = priceAtPurchase;
+  }
+
+  public String getProductName() {
+    return productName;
+  }
+
+  public void setProductName(String productName) {
+    this.productName = productName;
   }
 }

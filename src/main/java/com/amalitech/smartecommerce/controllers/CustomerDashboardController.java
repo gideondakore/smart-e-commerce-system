@@ -170,7 +170,7 @@ public class CustomerDashboardController {
             Dialog<Void> dialog = new Dialog<>();
             dialog.setTitle("My Orders");
             dialog.setHeaderText("Order History");
-            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(new ButtonType("View Items", ButtonBar.ButtonData.OK_DONE), ButtonType.CLOSE);
             
             TableView<com.amalitech.smartecommerce.models.Order> orderTable = new TableView<>();
             TableColumn<com.amalitech.smartecommerce.models.Order, Integer> colOrderId = new TableColumn<>("Order ID");
@@ -194,9 +194,55 @@ public class CustomerDashboardController {
             orderTable.setPrefHeight(400);
             
             dialog.getDialogPane().setContent(orderTable);
+            
+            dialog.setResultConverter(btn -> {
+                if (btn.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    com.amalitech.smartecommerce.models.Order selected = orderTable.getSelectionModel().getSelectedItem();
+                    if (selected != null) showOrderItems(selected.getOrderId());
+                }
+                return null;
+            });
+            
             dialog.showAndWait();
         } catch (Exception e) {
             showError("Error", "Could not load orders: " + e.getMessage());
+        }
+    }
+
+    private void showOrderItems(int orderId) {
+        try {
+            java.util.List<com.amalitech.smartecommerce.models.OrderItem> items = orderService.getOrderItems(orderId);
+            
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Order Items");
+            dialog.setHeaderText("Order #" + orderId + " - Items");
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            
+            TableView<com.amalitech.smartecommerce.models.OrderItem> itemTable = new TableView<>();
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, String> colName = new TableColumn<>("Product");
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, Integer> colQty = new TableColumn<>("Quantity");
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, Double> colPrice = new TableColumn<>("Price");
+            TableColumn<com.amalitech.smartecommerce.models.OrderItem, Double> colSubtotal = new TableColumn<>("Subtotal");
+            
+            colName.setCellValueFactory(new PropertyValueFactory<>("productName"));
+            colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+            colPrice.setCellValueFactory(new PropertyValueFactory<>("priceAtPurchase"));
+            colSubtotal.setCellValueFactory(cellData -> 
+                new SimpleDoubleProperty(cellData.getValue().getQuantity() * cellData.getValue().getPriceAtPurchase()).asObject());
+            
+            colName.setPrefWidth(200);
+            colQty.setPrefWidth(80);
+            colPrice.setPrefWidth(100);
+            colSubtotal.setPrefWidth(100);
+            
+            itemTable.getColumns().addAll(colName, colQty, colPrice, colSubtotal);
+            itemTable.setItems(FXCollections.observableArrayList(items));
+            itemTable.setPrefHeight(300);
+            
+            dialog.getDialogPane().setContent(itemTable);
+            dialog.showAndWait();
+        } catch (Exception e) {
+            showError("Error", "Could not load order items: " + e.getMessage());
         }
     }
 

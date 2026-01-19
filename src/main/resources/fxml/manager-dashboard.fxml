@@ -44,8 +44,8 @@
                           style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 10;"/>
                 <Button text="Search" onAction="#handleSearch" 
                         style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-padding: 10 25; -fx-background-radius: 6;"/>
-                <Button text="View Orders" onAction="#handleViewOrders" 
-                        style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-padding: 10 25; -fx-background-radius: 6;"/>
+                <Button text="+ Add Product" onAction="#handleAddProduct" 
+                        style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-padding: 10 25; -fx-background-radius: 6; -fx-font-weight: bold;"/>
             </HBox>
             
             <!-- Products Table -->
@@ -66,8 +66,16 @@
     <!-- Bottom Actions -->
     <bottom>
         <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-background-color: white; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, -2);">
+            <Button text="Edit Product" onAction="#handleEditProduct" 
+                    style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
+            <Button text="Delete Product" onAction="#handleDeleteProduct" 
+                    style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
             <Button text="Update Stock" onAction="#handleUpdateStock" 
-                    style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6; -fx-font-weight: bold;"/>
+                    style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
+            <Button text="Manage Categories" onAction="#handleManageCategories" 
+                    style="-fx-background-color: #ec4899; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
+            <Button text="Manage Orders" onAction="#handleViewOrders" 
+                    style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
         </HBox>
     </bottom>
 </BorderPane>
