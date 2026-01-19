@@ -38,6 +38,7 @@ public class CustomerDashboardController {
     @FXML private TableColumn<CartEntry, Integer> colCartQty;
     @FXML private TableColumn<CartEntry, Double> colCartPrice;
     @FXML private Label totalLabel;
+    @FXML private ProgressIndicator searchSpinner;
 
     private final ProductService productService = new ProductService();
     private final OrderService orderService = new OrderService();
@@ -87,14 +88,24 @@ public class CustomerDashboardController {
     @FXML
     private void handleSearch() {
         String query = searchField.getText().trim();
-        try {
-            List<Product> results = query.isEmpty() ? 
-                productService.getAllProducts() : 
-                productService.searchProductsByName(query);
-            productList.setAll(results);
-        } catch (SQLException e) {
-            showError("Search Error", e.getMessage());
-        }
+        searchSpinner.setVisible(true);
+        new Thread(() -> {
+            try {
+                Thread.sleep(query.isEmpty() ? 0 : 300);
+                List<Product> results = query.isEmpty() ? 
+                    productService.getAllProducts() : 
+                    productService.searchProductsByName(query);
+                javafx.application.Platform.runLater(() -> {
+                    productList.setAll(results);
+                    searchSpinner.setVisible(false);
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    searchSpinner.setVisible(false);
+                    showError("Search Error", e.getMessage());
+                });
+            }
+        }).start();
     }
 
     @FXML

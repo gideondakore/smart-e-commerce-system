@@ -19,6 +19,8 @@
                 <Label fx:id="welcomeLabel" text="Welcome, Admin" style="-fx-font-size: 14px; -fx-text-fill: #6b7280;"/>
                 <Button text="Logout" onAction="#handleLogout" 
                         style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-padding: 8 20; -fx-background-radius: 6;"/>
+                <Button text="⚡ Performance Demo" onAction="#handlePerformanceDemo" 
+                        style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-padding: 8 20; -fx-background-radius: 6; -fx-font-weight: bold;"/>
             </HBox>
             
             <!-- Stats Cards -->
@@ -44,7 +46,10 @@
         <VBox spacing="15" style="-fx-padding: 20;">
             <!-- Search and Actions -->
             <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 10;">
-                <TextField fx:id="searchField" promptText="Search products..." HBox.hgrow="ALWAYS"
+                <Label fx:id="loadingLabel" text="" style="-fx-text-fill: #667eea; -fx-font-weight: bold;" visible="false"/>
+                <ProgressIndicator fx:id="loadingSpinner" prefWidth="20" prefHeight="20" visible="false"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField" promptText="Search products..." prefWidth="300"
                           style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 10;"/>
                 <Button text="Search" onAction="#handleSearch" 
                         style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-padding: 10 25; -fx-background-radius: 6;"/>

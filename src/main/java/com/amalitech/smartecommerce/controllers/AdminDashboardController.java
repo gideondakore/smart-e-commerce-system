@@ -34,6 +34,8 @@ public class AdminDashboardController {
     @FXML private Label statsProducts;
     @FXML private Label statsUsers;
     @FXML private Label statsCategories;
+    @FXML private Label loadingLabel;
+    @FXML private ProgressIndicator loadingSpinner;
 
     private final ProductService productService = new ProductService();
     private final OrderService orderService = new OrderService();
@@ -60,11 +62,25 @@ public class AdminDashboardController {
 
     private void loadData() {
         try {
+            showLoading("Loading products...");
             List<Product> products = productService.getAllProducts();
             productList.setAll(products);
+            hideLoading();
         } catch (SQLException e) {
+            hideLoading();
             showError("Error loading products", e.getMessage());
         }
+    }
+
+    private void showLoading(String message) {
+        loadingLabel.setText(message);
+        loadingLabel.setVisible(true);
+        loadingSpinner.setVisible(true);
+    }
+
+    private void hideLoading() {
+        loadingLabel.setVisible(false);
+        loadingSpinner.setVisible(false);
     }
 
     private void loadStats() {
@@ -397,7 +413,14 @@ public class AdminDashboardController {
                     grid.setVgap(10);
                     grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
                     
-                    TextField nameField = new TextField(selected.getName());
+                    ComboBox<String> nameField = new ComboBox<>();
+                    nameField.setItems(FXCollections.observableArrayList(
+                        "Electronics", "Books", "Clothing", "Home & Kitchen", 
+                        "Sports & Outdoors", "Beauty & Health", "Toys & Games", 
+                        "Office Supplies", "Others"
+                    ));
+                    nameField.setValue(selected.getName());
+                    nameField.setEditable(false);
                     TextField descField = new TextField(selected.getDescription());
                     
                     grid.add(new Label("Name:"), 0, 0);
@@ -409,7 +432,7 @@ public class AdminDashboardController {
                     
                     editDialog.setResultConverter(b -> {
                         if (b == saveBtn) {
-                            selected.setName(nameField.getText().trim());
+                            selected.setName(nameField.getValue());
                             selected.setDescription(descField.getText().trim());
                             return selected;
                         }
@@ -537,6 +560,136 @@ public class AdminDashboardController {
         } catch (Exception e) {
             showError("Error", "Could not load order items: " + e.getMessage());
         }
+    }
+
+    @FXML
+    private void handlePerformanceDemo() {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Performance Demonstration");
+        dialog.setHeaderText("Cache & Index Performance Comparison");
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        
+        javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(15);
+        content.setPadding(new javafx.geometry.Insets(20));
+        content.setPrefWidth(600);
+        
+        Label title1 = new Label("1. CACHING DEMONSTRATION");
+        title1.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        
+        javafx.scene.layout.HBox cacheTest = new javafx.scene.layout.HBox(10);
+        Button testCacheBtn = new Button("Test Cache Performance");
+        Label cacheResult = new Label("");
+        cacheResult.setStyle("-fx-font-size: 12px;");
+        cacheTest.getChildren().addAll(testCacheBtn, cacheResult);
+        
+        testCacheBtn.setOnAction(e -> {
+            cacheResult.setText("Testing...");
+            new Thread(() -> {
+                try {
+                    productService.clearCache();
+                    long start1 = System.nanoTime();
+                    productService.getAllProducts();
+                    long dbTime = System.nanoTime() - start1;
+                    
+                    long start2 = System.nanoTime();
+                    productService.getAllProducts();
+                    long cacheTime = System.nanoTime() - start2;
+                    
+                    double improvement = ((double)(dbTime - cacheTime) / dbTime) * 100;
+                    javafx.application.Platform.runLater(() -> 
+                        cacheResult.setText(String.format(
+                            "DB: %.2fms | Cache: %.2fms | %.1f%% faster",
+                            dbTime/1_000_000.0, cacheTime/1_000_000.0, improvement
+                        ))
+                    );
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> cacheResult.setText("Error: " + ex.getMessage()));
+                }
+            }).start();
+        });
+        
+        Label title2 = new Label("2. INDEXING DEMONSTRATION");
+        title2.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 20 0 0 0;");
+        
+        javafx.scene.layout.HBox indexTest = new javafx.scene.layout.HBox(10);
+        TextField searchTerm = new TextField("Laptop");
+        searchTerm.setPrefWidth(150);
+        Button testIndexBtn = new Button("Test Index Performance");
+        Label indexResult = new Label("");
+        indexResult.setStyle("-fx-font-size: 12px;");
+        indexTest.getChildren().addAll(new Label("Search:"), searchTerm, testIndexBtn, indexResult);
+        
+        testIndexBtn.setOnAction(e -> {
+            indexResult.setText("Testing...");
+            String query = searchTerm.getText();
+            new Thread(() -> {
+                try {
+                    productService.clearCache();
+                    long start = System.nanoTime();
+                    productService.searchProductsByName(query);
+                    long indexTime = System.nanoTime() - start;
+                    
+                    javafx.application.Platform.runLater(() -> 
+                        indexResult.setText(String.format(
+                            "Search time: %.2fms (using SQL index on LOWER(name))",
+                            indexTime/1_000_000.0
+                        ))
+                    );
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> indexResult.setText("Error: " + ex.getMessage()));
+                }
+            }).start();
+        });
+        
+        Label title3 = new Label("3. SORTING ALGORITHMS");
+        title3.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 20 0 0 0;");
+        
+        javafx.scene.layout.HBox sortTest = new javafx.scene.layout.HBox(10);
+        Button testSortBtn = new Button("Compare Sorting Algorithms");
+        Label sortResult = new Label("");
+        sortResult.setStyle("-fx-font-size: 12px;");
+        sortTest.getChildren().addAll(testSortBtn, sortResult);
+        
+        testSortBtn.setOnAction(e -> {
+            sortResult.setText("Testing...");
+            new Thread(() -> {
+                try {
+                    List<Product> products = productService.getAllProducts();
+                    
+                    long start1 = System.nanoTime();
+                    productService.quickSortByPrice(new java.util.ArrayList<>(products), true);
+                    long quickTime = System.nanoTime() - start1;
+                    
+                    long start2 = System.nanoTime();
+                    productService.sortProductsByPrice(new java.util.ArrayList<>(products), true);
+                    long timTime = System.nanoTime() - start2;
+                    
+                    javafx.application.Platform.runLater(() -> 
+                        sortResult.setText(String.format(
+                            "QuickSort: %.2fms | TimSort: %.2fms",
+                            quickTime/1_000_000.0, timTime/1_000_000.0
+                        ))
+                    );
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> sortResult.setText("Error: " + ex.getMessage()));
+                }
+            }).start();
+        });
+        
+        Label explanation = new Label(
+            "\n📊 Performance Insights:\n" +
+            "• Caching: In-memory HashMap provides O(1) lookups vs O(n) database queries\n" +
+            "• Indexing: SQL index on LOWER(name) enables fast case-insensitive search\n" +
+            "• Sorting: QuickSort O(n log n) vs TimSort (optimized for real-world data)\n" +
+            "• Hash-based cache mirrors database index logic for instant retrieval"
+        );
+        explanation.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280; -fx-padding: 10; -fx-background-color: #f3f4f6; -fx-background-radius: 5;");
+        explanation.setWrapText(true);
+        
+        content.getChildren().addAll(title1, cacheTest, title2, indexTest, title3, sortTest, explanation);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setPrefWidth(650);
+        dialog.showAndWait();
     }
 
     @FXML

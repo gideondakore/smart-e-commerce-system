@@ -422,7 +422,14 @@ public class ManagerDashboardController {
                     grid.setVgap(10);
                     grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
                     
-                    TextField nameField = new TextField(selected.getName());
+                    ComboBox<String> nameField = new ComboBox<>();
+                    nameField.setItems(FXCollections.observableArrayList(
+                        "Electronics", "Books", "Clothing", "Home & Kitchen", 
+                        "Sports & Outdoors", "Beauty & Health", "Toys & Games", 
+                        "Office Supplies", "Others"
+                    ));
+                    nameField.setValue(selected.getName());
+                    nameField.setEditable(false);
                     TextField descField = new TextField(selected.getDescription());
                     
                     grid.add(new Label("Name:"), 0, 0);
@@ -434,7 +441,7 @@ public class ManagerDashboardController {
                     
                     editDialog.setResultConverter(b -> {
                         if (b == saveBtn) {
-                            selected.setName(nameField.getText().trim());
+                            selected.setName(nameField.getValue());
                             selected.setDescription(descField.getText().trim());
                             return selected;
                         }

@@ -24,6 +24,7 @@
             
             <!-- Search Bar -->
             <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 0 20 20 20;">
+                <ProgressIndicator fx:id="searchSpinner" prefWidth="20" prefHeight="20" visible="false"/>
                 <TextField fx:id="searchField" promptText="Search for products..." HBox.hgrow="ALWAYS"
                           style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"/>
                 <Button text="Search" onAction="#handleSearch" 
