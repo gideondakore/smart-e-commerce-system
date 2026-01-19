@@ -1,79 +1,71 @@
 package com.amalitech.smartecommerce.models;
 
 public class Product {
-  private int productId;
-  private int categoryId;
-  private String name;
-  private double price;
-  private int stockQuantity;
+    private Integer productId;      
+    private Integer categoryId;    
+    private String name;
+    private Double price;           
+    private Integer stockQuantity;  
 
-  public Product() {}
+    public Product() {}
 
-  public Product(int productId, int categoryId, String name, double price, int stockQuantity) {
-    this.productId = productId;
-    this.categoryId = categoryId;
-    this.name = name;
-    this.price = price;
-    this.stockQuantity = stockQuantity;
-  }
+    public Product(Integer productId, Integer categoryId, String name, Double price, Integer stockQuantity) {
+        this.productId = productId;
+        this.categoryId = categoryId;
+        this.name = name;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+    }
 
-  public Product(int categoryId, String name, double price, int stockQuantity) {
-    this.categoryId = categoryId;
-    this.name = name;
-    this.price = price;
-    this.stockQuantity = stockQuantity;
-  }
+    public Product(Integer categoryId, String name, Double price, Integer stockQuantity) {
+        this.categoryId = categoryId;
+        this.name = name;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+    }
 
-  public int getProductId() {
-    return productId;
-  }
+    public Integer getProductId() {
+        return productId;
+    }
 
-  public void setProductId(int productId) {
-    this.productId = productId;
-  }
+    public void setProductId(Integer productId) {
+        this.productId = productId;
+    }
 
-  public int getCategoryId() {
-    return categoryId;
-  }
+    public Integer getCategoryId() {
+        return categoryId;
+    }
 
-  public void setCategoryId(int categoryId) {
-    this.categoryId = categoryId;
-  }
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public double getPrice() {
-    return price;
-  }
+    public Double getPrice() {
+        return price;
+    }
 
-  public void setPrice(double price) {
-    this.price = price;
-  }
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
-  public int getStockQuantity() {
-    return stockQuantity;
-  }
+    public Integer getStockQuantity() {
+        return stockQuantity;
+    }
 
-  public void setStockQuantity(int stockQuantity) {
-    this.stockQuantity = stockQuantity;
-  }
+    public void setStockQuantity(Integer stockQuantity) {
+        this.stockQuantity = stockQuantity;
+    }
 
-  @Override
-  public String toString() {
-    return "Product{id="
-        + productId
-        + ", name='"
-        + name
-        + "', price="
-        + price
-        + ", stock="
-        + stockQuantity
-        + "}";
-  }
+    @Override
+    public String toString() {
+        return "Product{id=" + productId + ", name='" + name + "', price=" + price + ", stock=" + stockQuantity + "}";
+    }
 }

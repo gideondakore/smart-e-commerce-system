@@ -35,9 +35,20 @@ public class LoginController {
 
         try {
             Optional<User> userOpt = authService.login(email, password);
-            if (userOpt.isPresent()) {
+//             Login attempt for email: diana.miller@email.com
+// User found: Optional[User{id=8, email='diana.miller@email.com', name='Diana Miller', role='customer'}]
+// Loading dashboard: /fxml/customer-dashboard.fxml for role: customer
+//IsPresent: true
+
+            System.out.println("Login attempt for email: " + email);
+            System.out.println("User found: " + userOpt);
+            System.out.println("IsPresent: " + userOpt.isPresent());
+            if (userOpt.isPresent()) {  
+
                 User user = userOpt.get();
+                System.out.println("User: " + user);
                 SessionManager.getInstance().setCurrentUser(user);
+                System.out.println("Current User set in SessionManager: " + SessionManager.getInstance().getCurrentUser());
                 navigateToDashboard(user);
             } else {
                 showError("Invalid email or password");
@@ -49,6 +60,8 @@ public class LoginController {
 
     private void navigateToDashboard(User user) {
         try {
+
+            System.out.println("Navigating to dashboard for user: " + user);
             String fxmlFile = switch (user.getRole().toLowerCase()) {
                 case "admin" -> "/fxml/admin-dashboard.fxml";
                 case "manager" -> "/fxml/manager-dashboard.fxml";

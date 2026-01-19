@@ -28,7 +28,7 @@ public class InitDB {
 
             stmt.execute(sql);
 
-            IO.println("Tables created successfully");
+            System.out.println("Tables created successfully");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -39,7 +39,7 @@ public class InitDB {
              Statement stmt = conn.createStatement()) {
             String sql = readResourceFile("sql/seed_data.sql");
             stmt.execute(sql);
-            IO.println("Seeding table with data created successfully");
+            System.out.println("Seeding table with data created successfully");
         } catch (IOException e) {
             e.printStackTrace();
         }

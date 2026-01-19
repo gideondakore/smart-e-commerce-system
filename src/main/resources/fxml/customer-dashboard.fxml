@@ -66,7 +66,8 @@
                 
                 <HBox alignment="CENTER_RIGHT" spacing="10">
                     <Label text="Total:" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1f2937;"/>
-                    <Label fx:id="totalLabel" text="$0.00" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/>
+                    <!-- <Label fx:id="totalLabel" text="$0.00" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/> -->
+                    <Label fx:id="totalLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/>
                 </HBox>
                 
                 <Button text="Remove Selected" onAction="#handleRemoveFromCart" maxWidth="Infinity"

@@ -13,9 +13,9 @@ public class UserSeeder {
       try (PreparedStatement stmt = conn.prepareStatement(sql)) {
         int rows = stmt.executeUpdate();
         if (rows > 0) {
-          IO.println("User seeded successfully.");
+          System.out.println("User seeded successfully.");
         } else {
-          IO.println("User already exists.");
+          System.out.println("User already exists.");
         }
       }
     } catch (SQLException e) {

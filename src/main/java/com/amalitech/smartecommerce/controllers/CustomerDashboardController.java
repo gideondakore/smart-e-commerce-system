@@ -50,6 +50,8 @@ public class CustomerDashboardController {
         User user = SessionManager.getInstance().getCurrentUser();
         welcomeLabel.setText("Welcome, " + user.getFullName());
 
+        totalLabel.setText("$0.00");
+
         colId.setCellValueFactory(new PropertyValueFactory<>("productId"));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));

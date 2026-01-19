@@ -46,7 +46,7 @@ public class CategoryService {
         // Add to cache
         categoryCache.put(category.getCategoryId(), category);
         categoryNameCache.put(category.getName().toLowerCase(), category);
-        IO.println("[CategoryService] Created and cached category: " + category.getName());
+        System.out.println("[CategoryService] Created and cached category: " + category.getName());
     }
 
     /**
@@ -55,12 +55,12 @@ public class CategoryService {
     public Category getCategoryById(int id) throws SQLException {
         // Check cache first
         if (categoryCache.containsKey(id)) {
-            IO.println("[CategoryService] Cache HIT for category ID: " + id);
+            System.out.println("[CategoryService] Cache HIT for category ID: " + id);
             return categoryCache.get(id);
         }
 
         // Cache miss - query database
-        IO.println("[CategoryService] Cache MISS for category ID: " + id);
+        System.out.println("[CategoryService] Cache MISS for category ID: " + id);
         Category category = categoryDAO.findById(id);
         
         if (category != null) {
@@ -79,12 +79,12 @@ public class CategoryService {
         
         // Check cache first
         if (categoryNameCache.containsKey(lowerName)) {
-            IO.println("[CategoryService] Cache HIT for category name: " + name);
+            System.out.println("[CategoryService] Cache HIT for category name: " + name);
             return categoryNameCache.get(lowerName);
         }
 
         // Cache miss - load all categories to populate cache
-        IO.println("[CategoryService] Cache MISS for category name: " + name);
+        System.out.println("[CategoryService] Cache MISS for category name: " + name);
         List<Category> categories = getAllCategories();
         
         for (Category category : categories) {
@@ -105,12 +105,12 @@ public class CategoryService {
         
         // Check if cache is valid
         if (allCategoriesCache != null && (now - cacheTimestamp) < CACHE_TTL_MS) {
-            IO.println("[CategoryService] Returning cached categories list");
+            System.out.println("[CategoryService] Returning cached categories list");
             return allCategoriesCache;
         }
 
         // Cache miss or expired - query database
-        IO.println("[CategoryService] Loading categories from database");
+        System.out.println("[CategoryService] Loading categories from database");
         allCategoriesCache = categoryDAO.findAll();
         cacheTimestamp = now;
         
@@ -132,7 +132,7 @@ public class CategoryService {
         // Update cache
         categoryCache.put(category.getCategoryId(), category);
         categoryNameCache.put(category.getName().toLowerCase(), category);
-        IO.println("[CategoryService] Updated and re-cached category: " + category.getName());
+        System.out.println("[CategoryService] Updated and re-cached category: " + category.getName());
     }
 
     /**
@@ -148,7 +148,7 @@ public class CategoryService {
             categoryNameCache.remove(category.getName().toLowerCase());
         }
         invalidateCache();
-        IO.println("[CategoryService] Deleted category ID: " + id);
+        System.out.println("[CategoryService] Deleted category ID: " + id);
     }
 
     /**
@@ -157,7 +157,7 @@ public class CategoryService {
     private void invalidateCache() {
         allCategoriesCache = null;
         cacheTimestamp = 0;
-        IO.println("[CategoryService] Cache invalidated");
+        System.out.println("[CategoryService] Cache invalidated");
     }
 
     /**
@@ -168,7 +168,7 @@ public class CategoryService {
         categoryNameCache.clear();
         allCategoriesCache = null;
         cacheTimestamp = 0;
-        IO.println("[CategoryService] All caches cleared");
+        System.out.println("[CategoryService] All caches cleared");
     }
 
     /**
@@ -189,8 +189,8 @@ public class CategoryService {
      * Useful for application startup.
      */
     public void preloadCache() throws SQLException {
-        IO.println("[CategoryService] Preloading category cache...");
+        System.out.println("[CategoryService] Preloading category cache...");
         getAllCategories();
-        IO.println("[CategoryService] Preloaded " + categoryCache.size() + " categories");
+        System.out.println("[CategoryService] Preloaded " + categoryCache.size() + " categories");
     }
 }

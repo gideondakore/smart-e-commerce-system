@@ -33,55 +33,55 @@ public class PerformanceTestRunner {
     }
 
     public void runAllTests() {
-        IO.println("╔══════════════════════════════════════════════════════════════╗");
-        IO.println("║         SMART E-COMMERCE PERFORMANCE TEST SUITE              ║");
-        IO.println("╚══════════════════════════════════════════════════════════════╝\n");
+        System.out.println("╔══════════════════════════════════════════════════════════════╗");
+        System.out.println("║         SMART E-COMMERCE PERFORMANCE TEST SUITE              ║");
+        System.out.println("╚══════════════════════════════════════════════════════════════╝\n");
 
         try {
             ProductService productService = new ProductService();
             ProductDAO productDAO = new ProductDAO();
 
             // 1. Setup: Populate test data
-            IO.println("📦 Phase 1: Data Population");
-            IO.println("─".repeat(50));
+            System.out.println("📦 Phase 1: Data Population");
+            System.out.println("─".repeat(50));
             populateTestData();
-            IO.println();
+            System.out.println();
 
             // 2. Index Performance Tests
-            IO.println("🔍 Phase 2: Index Performance Comparison");
-            IO.println("─".repeat(50));
+            System.out.println("🔍 Phase 2: Index Performance Comparison");
+            System.out.println("─".repeat(50));
             testIndexPerformance(productService);
-            IO.println();
+            System.out.println();
 
             // 3. Cache Performance Tests
-            IO.println("💾 Phase 3: Cache Performance Comparison");
-            IO.println("─".repeat(50));
+            System.out.println("💾 Phase 3: Cache Performance Comparison");
+            System.out.println("─".repeat(50));
             testCachePerformance(productService);
-            IO.println();
+            System.out.println();
 
             // 4. Sorting Algorithm Comparison
-            IO.println("📊 Phase 4: Sorting Algorithm Comparison");
-            IO.println("─".repeat(50));
+            System.out.println("📊 Phase 4: Sorting Algorithm Comparison");
+            System.out.println("─".repeat(50));
             testSortingAlgorithms(productService);
-            IO.println();
+            System.out.println();
 
             // 5. Search Algorithm Comparison
-            IO.println("🔎 Phase 5: Search Algorithm Comparison");
-            IO.println("─".repeat(50));
+            System.out.println("🔎 Phase 5: Search Algorithm Comparison");
+            System.out.println("─".repeat(50));
             testSearchAlgorithms(productService);
-            IO.println();
+            System.out.println();
 
             // 6. Generate Report
-            IO.println("📝 Phase 6: Generating Performance Report");
-            IO.println("─".repeat(50));
+            System.out.println("📝 Phase 6: Generating Performance Report");
+            System.out.println("─".repeat(50));
             generateReport();
 
             // 7. Cleanup
-            IO.println("\n🧹 Cleaning up test data...");
+            System.out.println("\n🧹 Cleaning up test data...");
             cleanupTestData();
 
-            IO.println("\n✅ All tests completed successfully!");
-            IO.println("📄 Report saved to: " + REPORT_PATH);
+            System.out.println("\n✅ All tests completed successfully!");
+            System.out.println("📄 Report saved to: " + REPORT_PATH);
 
         } catch (Exception e) {
             System.err.println("❌ Test failed: " + e.getMessage());
@@ -90,7 +90,7 @@ public class PerformanceTestRunner {
     }
 
     private void populateTestData() throws SQLException {
-        IO.println("Populating database with " + PRODUCT_COUNT + " test products...");
+        System.out.println("Populating database with " + PRODUCT_COUNT + " test products...");
         
         PerformanceTimer timer = new PerformanceTimer();
         timer.start();
@@ -112,7 +112,7 @@ public class PerformanceTestRunner {
 
                 if (i % 1000 == 0) {
                     stmt.executeBatch();
-                    IO.print(".");
+                    System.out.print(".");
                 }
             }
             stmt.executeBatch();
@@ -121,7 +121,7 @@ public class PerformanceTestRunner {
         }
 
         long duration = timer.end();
-        IO.println("\n✓ Populated " + PRODUCT_COUNT + " products in " + 
+        System.out.println("\n✓ Populated " + PRODUCT_COUNT + " products in " + 
                           PerformanceTimer.formatDuration(duration));
         
         results.add(new TestResult("Data Population", PRODUCT_COUNT + " records", duration, 0, 0));
@@ -129,7 +129,7 @@ public class PerformanceTestRunner {
 
     private void testIndexPerformance(ProductService productService) throws SQLException {
         // Test WITHOUT index (drop it first)
-        IO.println("Testing search WITHOUT index...");
+        System.out.println("Testing search WITHOUT index...");
         dropIndex("idx_products_name_lower");
         
         // Clear cache to ensure DB query
@@ -146,10 +146,10 @@ public class PerformanceTestRunner {
             totalNoIndex += timer.end();
         }
         long avgNoIndex = totalNoIndex / iterations;
-        IO.println("  Average time (No Index): " + PerformanceTimer.formatDuration(avgNoIndex));
+        System.out.println("  Average time (No Index): " + PerformanceTimer.formatDuration(avgNoIndex));
 
         // Test WITH index
-        IO.println("Testing search WITH index...");
+        System.out.println("Testing search WITH index...");
         createIndex("idx_products_name_lower", "LOWER(name)");
         
         long totalWithIndex = 0;
@@ -161,7 +161,7 @@ public class PerformanceTestRunner {
             totalWithIndex += timer.end();
         }
         long avgWithIndex = totalWithIndex / iterations;
-        IO.println("  Average time (With Index): " + PerformanceTimer.formatDuration(avgWithIndex));
+        System.out.println("  Average time (With Index): " + PerformanceTimer.formatDuration(avgWithIndex));
 
         double improvement = avgNoIndex > 0 ? ((double)(avgNoIndex - avgWithIndex) / avgNoIndex) * 100 : 0;
         System.out.printf("  📈 Improvement: %.2f%%\n", improvement);
@@ -174,7 +174,7 @@ public class PerformanceTestRunner {
         // Get a product ID for testing
         List<Product> products = productService.getAllProducts();
         if (products.isEmpty()) {
-            IO.println("  ⚠ No products found for cache test");
+            System.out.println("  ⚠ No products found for cache test");
             return;
         }
         
@@ -183,15 +183,15 @@ public class PerformanceTestRunner {
         // Clear cache and test DB fetch
         productService.clearCache();
         
-        IO.println("Testing fetch from DATABASE (cache miss)...");
+        System.out.println("Testing fetch from DATABASE (cache miss)...");
         PerformanceTimer timer = new PerformanceTimer();
         timer.start();
         productService.getProductById(testId);
         long dbFetchTime = timer.end();
-        IO.println("  DB Fetch Time: " + PerformanceTimer.formatDuration(dbFetchTime));
+        System.out.println("  DB Fetch Time: " + PerformanceTimer.formatDuration(dbFetchTime));
 
         // Test cache hit (multiple times for accuracy)
-        IO.println("Testing fetch from CACHE (cache hit)...");
+        System.out.println("Testing fetch from CACHE (cache hit)...");
         long totalCacheTime = 0;
         int iterations = 100;
         for (int i = 0; i < iterations; i++) {
@@ -200,7 +200,7 @@ public class PerformanceTestRunner {
             totalCacheTime += timer.end();
         }
         long avgCacheTime = totalCacheTime / iterations;
-        IO.println("  Cache Fetch Time (avg): " + PerformanceTimer.formatDuration(avgCacheTime));
+        System.out.println("  Cache Fetch Time (avg): " + PerformanceTimer.formatDuration(avgCacheTime));
 
         double improvement = dbFetchTime > 0 ? ((double)(dbFetchTime - avgCacheTime) / dbFetchTime) * 100 : 0;
         System.out.printf("  📈 Improvement: %.2f%%\n", improvement);
@@ -212,32 +212,32 @@ public class PerformanceTestRunner {
 
     private void testSortingAlgorithms(ProductService productService) throws SQLException {
         List<Product> products = productService.getAllProducts();
-        IO.println("Testing with " + products.size() + " products...\n");
+        System.out.println("Testing with " + products.size() + " products...\n");
 
         // QuickSort
         PerformanceTimer timer = new PerformanceTimer();
         timer.start();
         productService.quickSortByPrice(new ArrayList<>(products), true);
         long quickSortTime = timer.end();
-        IO.println("  QuickSort: " + PerformanceTimer.formatDuration(quickSortTime));
+        System.out.println("  QuickSort: " + PerformanceTimer.formatDuration(quickSortTime));
         results.add(new TestResult("QuickSort (Price)", products.size() + " items", quickSortTime, 0, 0));
 
         // Java TimSort (via stream sort)
         timer.start();
         productService.sortProductsByPrice(new ArrayList<>(products), true);
         long timSortTime = timer.end();
-        IO.println("  TimSort:   " + PerformanceTimer.formatDuration(timSortTime));
+        System.out.println("  TimSort:   " + PerformanceTimer.formatDuration(timSortTime));
         results.add(new TestResult("TimSort (Price)", products.size() + " items", timSortTime, 0, 0));
 
         // MergeSort by name
         timer.start();
         OptimizationUtils.mergeSortByName(new ArrayList<>(products), true);
         long mergeSortTime = timer.end();
-        IO.println("  MergeSort: " + PerformanceTimer.formatDuration(mergeSortTime));
+        System.out.println("  MergeSort: " + PerformanceTimer.formatDuration(mergeSortTime));
         results.add(new TestResult("MergeSort (Name)", products.size() + " items", mergeSortTime, 0, 0));
 
         // Comparison output
-        IO.println("\n  Algorithm Comparison:");
+        System.out.println("\n  Algorithm Comparison:");
         System.out.printf("  • QuickSort vs TimSort: %.2fx\n", (double)quickSortTime / timSortTime);
         System.out.printf("  • MergeSort vs TimSort: %.2fx\n", (double)mergeSortTime / timSortTime);
     }
@@ -247,14 +247,14 @@ public class PerformanceTestRunner {
         int targetId = products.get(products.size() / 2).getProductId();
         String targetName = products.get(products.size() / 2).getName();
         
-        IO.println("Testing search algorithms with " + products.size() + " products...\n");
+        System.out.println("Testing search algorithms with " + products.size() + " products...\n");
 
         // Linear Search
         PerformanceTimer timer = new PerformanceTimer();
         timer.start();
         OptimizationUtils.linearSearchByName(products, targetName);
         long linearTime = timer.end();
-        IO.println("  Linear Search:   " + PerformanceTimer.formatDuration(linearTime));
+        System.out.println("  Linear Search:   " + PerformanceTimer.formatDuration(linearTime));
 
         // Binary Search (requires sorted list)
         List<Product> sortedById = new ArrayList<>(products);
@@ -262,20 +262,20 @@ public class PerformanceTestRunner {
         timer.start();
         OptimizationUtils.binarySearchById(sortedById, targetId);
         long binaryTime = timer.end();
-        IO.println("  Binary Search:   " + PerformanceTimer.formatDuration(binaryTime));
+        System.out.println("  Binary Search:   " + PerformanceTimer.formatDuration(binaryTime));
 
         // HashMap Lookup
         Map<String, Product> hashMap = OptimizationUtils.buildNameHashMap(products);
         timer.start();
         hashMap.get(targetName.toLowerCase());
         long hashTime = timer.end();
-        IO.println("  HashMap Lookup:  " + PerformanceTimer.formatDuration(hashTime));
+        System.out.println("  HashMap Lookup:  " + PerformanceTimer.formatDuration(hashTime));
 
         results.add(new TestResult("Linear Search", targetName, linearTime, 0, 0));
         results.add(new TestResult("Binary Search", "ID: " + targetId, binaryTime, 0, 0));
         results.add(new TestResult("HashMap Lookup", targetName, hashTime, 0, 0));
 
-        IO.println("\n  Search Comparison:");
+        System.out.println("\n  Search Comparison:");
         System.out.printf("  • HashMap is %.1fx faster than Linear Search\n",
                          hashTime > 0 ? (double)linearTime / hashTime : linearTime);
         System.out.printf("  • Binary Search is %.1fx faster than Linear Search\n",
@@ -340,7 +340,7 @@ public class PerformanceTestRunner {
             writer.println("4. **Use Binary Search** when data is already sorted");
             writer.println("5. **Monitor cache hit rates** to ensure caching effectiveness");
             
-            IO.println("✓ Report generated successfully");
+            System.out.println("✓ Report generated successfully");
             
         } catch (IOException e) {
             System.err.println("Failed to generate report: " + e.getMessage());
@@ -352,7 +352,7 @@ public class PerformanceTestRunner {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              Statement stmt = conn.createStatement()) {
             int deleted = stmt.executeUpdate(sql);
-            IO.println("✓ Deleted " + deleted + " test products");
+            System.out.println("✓ Deleted " + deleted + " test products");
         }
     }
 
@@ -361,9 +361,9 @@ public class PerformanceTestRunner {
              Statement stmt = conn.createStatement()) {
             // PostgreSQL syntax
             stmt.execute("DROP INDEX IF EXISTS " + indexName);
-            IO.println("  ✓ Dropped index: " + indexName);
+            System.out.println("  ✓ Dropped index: " + indexName);
         } catch (SQLException e) {
-            IO.println("  ⚠ Could not drop index: " + e.getMessage());
+            System.out.println("  ⚠ Could not drop index: " + e.getMessage());
         }
     }
 
@@ -372,9 +372,9 @@ public class PerformanceTestRunner {
              Statement stmt = conn.createStatement()) {
             // PostgreSQL syntax for expression index
             stmt.execute("CREATE INDEX IF NOT EXISTS " + indexName + " ON products (" + expression + ")");
-            IO.println("  ✓ Created index: " + indexName);
+            System.out.println("  ✓ Created index: " + indexName);
         } catch (SQLException e) {
-            IO.println("  ⚠ Could not create index: " + e.getMessage());
+            System.out.println("  ⚠ Could not create index: " + e.getMessage());
         }
     }
 

@@ -50,7 +50,7 @@ public class ProductService {
         invalidateCache();
         // Add to cache
         productCache.put(product.getProductId(), product);
-        IO.println("[ProductService] Created and cached product: " + product.getName());
+        System.out.println("[ProductService] Created and cached product: " + product.getName());
     }
 
     /**
@@ -60,13 +60,13 @@ public class ProductService {
         // 1. Check Cache (O(1) HashMap lookup)
         if (productCache.containsKey(id)) {
             cacheHits++;
-            IO.println("[ProductService] Cache HIT for Product ID: " + id);
+            System.out.println("[ProductService] Cache HIT for Product ID: " + id);
             return productCache.get(id);
         }
 
         // 2. Cache miss - Query DB
         cacheMisses++;
-        IO.println("[ProductService] Cache MISS for Product ID: " + id + ". Querying DB...");
+        System.out.println("[ProductService] Cache MISS for Product ID: " + id + ". Querying DB...");
         Product product = productDAO.findById(id);
 
         // 3. Put in Cache
@@ -82,17 +82,17 @@ public class ProductService {
     public List<Product> getAllProducts() throws SQLException {
         long now = System.currentTimeMillis();
 
-        IO.println("PRODUCT CACHE: " + allProductsCache);
+        System.out.println("PRODUCT CACHE: " + allProductsCache);
         // Check if cache is valid
         if (allProductsCache != null && (now - cacheTimestamp) < CACHE_TTL_MS) {
             cacheHits++;
-            IO.println("[ProductService] Returning cached products list");
+            System.out.println("[ProductService] Returning cached products list");
             return new ArrayList<>(allProductsCache);
         }
 
         // Cache miss - query database
         cacheMisses++;
-        IO.println("[ProductService] Loading products from database");
+        System.out.println("[ProductService] Loading products from database");
 
         try {
             allProductsCache = productDAO.findAll();
@@ -103,9 +103,9 @@ public class ProductService {
             new InitDB().createTables();
             new InitDB().seedTableWithData();
             allProductsCache = productDAO.findAll();
-            IO.println("Newly created data: " + allProductsCache);
+            System.out.println("Newly created data: " + allProductsCache);
         }
-//        IO.println("ALL PROODUCTS FROM DB: " + allProductsCache);
+//        System.out.println("ALL PROODUCTS FROM DB: " + allProductsCache);
         cacheTimestamp = now;
 
         // Populate individual cache
@@ -131,7 +131,7 @@ public class ProductService {
         invalidateCache();
         // Update cache
         productCache.put(product.getProductId(), product);
-        IO.println("[ProductService] Updated and re-cached Product ID: " + product.getProductId());
+        System.out.println("[ProductService] Updated and re-cached Product ID: " + product.getProductId());
     }
 
     /**
@@ -141,7 +141,7 @@ public class ProductService {
         productDAO.delete(id);
         productCache.remove(id);
         invalidateCache();
-        IO.println("[ProductService] Deleted product ID: " + id);
+        System.out.println("[ProductService] Deleted product ID: " + id);
     }
 
     // ==========================================
@@ -162,12 +162,12 @@ public class ProductService {
         // Check search cache
         if (searchCache.containsKey(normalizedQuery)) {
             cacheHits++;
-            IO.println("[ProductService] Search cache HIT for: " + query);
+            System.out.println("[ProductService] Search cache HIT for: " + query);
             return searchCache.get(normalizedQuery);
         }
 
         cacheMisses++;
-        IO.println("[ProductService] Executing search for: " + query);
+        System.out.println("[ProductService] Executing search for: " + query);
 
         // Use SQL-based search with LIKE (leverages idx_products_name_lower index)
         List<Product> results = productDAO.searchByName(query);
@@ -221,7 +221,7 @@ public class ProductService {
                 .collect(Collectors.toList());
 
         long duration = timer.end();
-        IO.println("[ProductService] Sorted " + products.size() +
+        System.out.println("[ProductService] Sorted " + products.size() +
                 " products by price in " + PerformanceTimer.formatDuration(duration));
 
         return sorted;
@@ -270,7 +270,7 @@ public class ProductService {
         OptimizationUtils.quickSortByPrice(sorted, 0, sorted.size() - 1, ascending);
 
         long duration = timer.end();
-        IO.println("[ProductService] QuickSort sorted " + products.size() +
+        System.out.println("[ProductService] QuickSort sorted " + products.size() +
                 " products in " + PerformanceTimer.formatDuration(duration));
 
         return sorted;
@@ -318,7 +318,7 @@ public class ProductService {
         allProductsCache = null;
         searchCache.clear();
         cacheTimestamp = 0;
-        IO.println("[ProductService] Cache invalidated");
+        System.out.println("[ProductService] Cache invalidated");
     }
 
     /**
@@ -331,7 +331,7 @@ public class ProductService {
         cacheTimestamp = 0;
         cacheHits = 0;
         cacheMisses = 0;
-        IO.println("[ProductService] All caches cleared");
+        System.out.println("[ProductService] All caches cleared");
     }
 
     /**
@@ -354,8 +354,8 @@ public class ProductService {
      * Preloads all products into cache.
      */
     public void preloadCache() throws SQLException {
-        IO.println("[ProductService] Preloading product cache...");
+        System.out.println("[ProductService] Preloading product cache...");
         getAllProducts();
-        IO.println("[ProductService] Preloaded " + productCache.size() + " products");
+        System.out.println("[ProductService] Preloaded " + productCache.size() + " products");
     }
 }
