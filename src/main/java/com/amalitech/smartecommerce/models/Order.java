@@ -7,6 +7,8 @@ public class Order {
   private int userId;
   private LocalDateTime orderDate;
   private double totalAmount;
+  private String status;
+  private String customerEmail;
 
   public Order() {}
 
@@ -14,6 +16,7 @@ public class Order {
     this.userId = userId;
     this.totalAmount = totalAmount;
     this.orderDate = LocalDateTime.now();
+    this.status = "pending";
   }
 
   public int getOrderId() {
@@ -46,5 +49,21 @@ public class Order {
 
   public void setTotalAmount(double totalAmount) {
     this.totalAmount = totalAmount;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public String getCustomerEmail() {
+    return customerEmail;
+  }
+
+  public void setCustomerEmail(String customerEmail) {
+    this.customerEmail = customerEmail;
   }
 }

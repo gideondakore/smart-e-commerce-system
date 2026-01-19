@@ -1,8 +1,11 @@
 package com.amalitech.smartecommerce.dao;
 
+import com.amalitech.smartecommerce.models.Order;
 import com.amalitech.smartecommerce.models.Product;
 import com.amalitech.smartecommerce.utils.DatabaseConnection;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class OrderDAO {
@@ -107,6 +110,59 @@ public class OrderDAO {
       if (orderStmt != null) orderStmt.close();
       if (itemStmt != null) itemStmt.close();
       if (stockStmt != null) stockStmt.close();
+    }
+  }
+
+  public List<Order> findByUserId(int userId) throws SQLException {
+    List<Order> orders = new ArrayList<>();
+    String sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC";
+    
+    try (Connection conn = DatabaseConnection.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setInt(1, userId);
+      try (ResultSet rs = stmt.executeQuery()) {
+        while (rs.next()) {
+          Order order = new Order();
+          order.setOrderId(rs.getInt("order_id"));
+          order.setUserId(rs.getInt("user_id"));
+          order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
+          order.setTotalAmount(rs.getDouble("total_amount"));
+          order.setStatus(rs.getString("status"));
+          orders.add(order);
+        }
+      }
+    }
+    return orders;
+  }
+
+  public List<Order> findAll() throws SQLException {
+    List<Order> orders = new ArrayList<>();
+    String sql = "SELECT o.*, u.email FROM orders o JOIN users u ON o.user_id = u.user_id ORDER BY o.order_date DESC";
+    
+    try (Connection conn = DatabaseConnection.getInstance().getConnection();
+         Statement stmt = conn.createStatement();
+         ResultSet rs = stmt.executeQuery(sql)) {
+      while (rs.next()) {
+        Order order = new Order();
+        order.setOrderId(rs.getInt("order_id"));
+        order.setUserId(rs.getInt("user_id"));
+        order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
+        order.setTotalAmount(rs.getDouble("total_amount"));
+        order.setStatus(rs.getString("status"));
+        order.setCustomerEmail(rs.getString("email"));
+        orders.add(order);
+      }
+    }
+    return orders;
+  }
+
+  public void updateStatus(int orderId, String status) throws SQLException {
+    String sql = "UPDATE orders SET status = ? WHERE order_id = ?";
+    try (Connection conn = DatabaseConnection.getInstance().getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setString(1, status);
+      stmt.setInt(2, orderId);
+      stmt.executeUpdate();
     }
   }
 }

@@ -5,6 +5,7 @@ import com.amalitech.smartecommerce.dao.UserDAO;
 import com.amalitech.smartecommerce.models.Category;
 import com.amalitech.smartecommerce.models.Product;
 import com.amalitech.smartecommerce.models.User;
+import com.amalitech.smartecommerce.services.OrderService;
 import com.amalitech.smartecommerce.services.ProductService;
 import com.amalitech.smartecommerce.utils.SessionManager;
 import javafx.collections.FXCollections;
@@ -35,6 +36,7 @@ public class AdminDashboardController {
     @FXML private Label statsCategories;
 
     private final ProductService productService = new ProductService();
+    private final OrderService orderService = new OrderService();
     private final UserDAO userDAO = new UserDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
     private ObservableList<Product> productList;
@@ -350,6 +352,73 @@ public class AdminDashboardController {
         categoryTable.setPrefHeight(400);
         dialog.getDialogPane().setContent(categoryTable);
         dialog.showAndWait();
+    }
+
+    @FXML
+    private void handleManageOrders() {
+        try {
+            List<com.amalitech.smartecommerce.models.Order> orders = orderService.getAllOrders();
+            
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Order Management");
+            dialog.setHeaderText("All Orders");
+            
+            ButtonType updateButton = new ButtonType("Update Status", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(updateButton, ButtonType.CLOSE);
+            
+            TableView<com.amalitech.smartecommerce.models.Order> orderTable = new TableView<>();
+            TableColumn<com.amalitech.smartecommerce.models.Order, Integer> colOrderId = new TableColumn<>("Order ID");
+            TableColumn<com.amalitech.smartecommerce.models.Order, String> colCustomer = new TableColumn<>("Customer");
+            TableColumn<com.amalitech.smartecommerce.models.Order, String> colDate = new TableColumn<>("Date");
+            TableColumn<com.amalitech.smartecommerce.models.Order, String> colStatus = new TableColumn<>("Status");
+            TableColumn<com.amalitech.smartecommerce.models.Order, Double> colTotal = new TableColumn<>("Total");
+            
+            colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
+            colCustomer.setCellValueFactory(new PropertyValueFactory<>("customerEmail"));
+            colDate.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getOrderDate().toString()));
+            colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+            colTotal.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
+            
+            colOrderId.setPrefWidth(80);
+            colCustomer.setPrefWidth(180);
+            colDate.setPrefWidth(180);
+            colStatus.setPrefWidth(100);
+            colTotal.setPrefWidth(100);
+            
+            orderTable.getColumns().addAll(colOrderId, colCustomer, colDate, colStatus, colTotal);
+            orderTable.setItems(FXCollections.observableArrayList(orders));
+            orderTable.setPrefHeight(400);
+            
+            dialog.getDialogPane().setContent(orderTable);
+            
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == updateButton) {
+                    com.amalitech.smartecommerce.models.Order selected = orderTable.getSelectionModel().getSelectedItem();
+                    if (selected != null) {
+                        List<String> choices = java.util.Arrays.asList("pending", "processing", "shipped", "delivered", "cancelled");
+                        ChoiceDialog<String> statusDialog = new ChoiceDialog<>(selected.getStatus(), choices);
+                        statusDialog.setTitle("Update Order Status");
+                        statusDialog.setHeaderText("Order #" + selected.getOrderId());
+                        statusDialog.setContentText("Select new status:");
+                        
+                        statusDialog.showAndWait().ifPresent(status -> {
+                            try {
+                                orderService.updateOrderStatus(selected.getOrderId(), status);
+                                showInfo("Success", "Order status updated");
+                            } catch (SQLException e) {
+                                showError("Error", e.getMessage());
+                            }
+                        });
+                    }
+                }
+                return null;
+            });
+            
+            dialog.showAndWait();
+        } catch (SQLException e) {
+            showError("Error", "Could not load orders: " + e.getMessage());
+        }
     }
 
     @FXML

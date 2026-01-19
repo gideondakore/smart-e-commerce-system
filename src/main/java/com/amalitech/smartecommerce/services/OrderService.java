@@ -1,8 +1,10 @@
 package com.amalitech.smartecommerce.services;
 
 import com.amalitech.smartecommerce.dao.OrderDAO;
+import com.amalitech.smartecommerce.models.Order;
 import com.amalitech.smartecommerce.models.Product;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 public class OrderService {
@@ -20,5 +22,17 @@ public class OrderService {
       System.err.println("Checkout failed: " + e.getMessage());
       return false;
     }
+  }
+
+  public List<Order> getOrdersByUserId(int userId) throws SQLException {
+    return orderDAO.findByUserId(userId);
+  }
+
+  public List<Order> getAllOrders() throws SQLException {
+    return orderDAO.findAll();
+  }
+
+  public void updateOrderStatus(int orderId, String status) throws SQLException {
+    orderDAO.updateStatus(orderId, status);
   }
 }

@@ -123,10 +123,12 @@ public class CustomerDashboardController {
     @FXML
     private void handleRemoveFromCart() {
         CartEntry selected = cartTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            cartMap.remove(selected.getProduct());
-            updateCartUI();
+        if (selected == null) {
+            showWarning("No Selection", "Please select an item to remove from cart");
+            return;
         }
+        cartMap.remove(selected.getProduct());
+        updateCartUI();
     }
 
     private void updateCartUI() {
@@ -161,7 +163,41 @@ public class CustomerDashboardController {
 
     @FXML
     private void handleViewOrders() {
-        showInfo("My Orders", "Order history would open here");
+        try {
+            User user = SessionManager.getInstance().getCurrentUser();
+            java.util.List<com.amalitech.smartecommerce.models.Order> orders = orderService.getOrdersByUserId(user.getUserId());
+            
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("My Orders");
+            dialog.setHeaderText("Order History");
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            
+            TableView<com.amalitech.smartecommerce.models.Order> orderTable = new TableView<>();
+            TableColumn<com.amalitech.smartecommerce.models.Order, Integer> colOrderId = new TableColumn<>("Order ID");
+            TableColumn<com.amalitech.smartecommerce.models.Order, String> colDate = new TableColumn<>("Date");
+            TableColumn<com.amalitech.smartecommerce.models.Order, String> colStatus = new TableColumn<>("Status");
+            TableColumn<com.amalitech.smartecommerce.models.Order, Double> colTotal = new TableColumn<>("Total");
+            
+            colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
+            colDate.setCellValueFactory(cellData -> 
+                new SimpleStringProperty(cellData.getValue().getOrderDate().toString()));
+            colStatus.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStatus() != null ? cellData.getValue().getStatus() : "Completed"));
+            colTotal.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
+            
+            colOrderId.setPrefWidth(80);
+            colDate.setPrefWidth(180);
+            colStatus.setPrefWidth(100);
+            colTotal.setPrefWidth(100);
+            
+            orderTable.getColumns().addAll(colOrderId, colDate, colStatus, colTotal);
+            orderTable.setItems(FXCollections.observableArrayList(orders));
+            orderTable.setPrefHeight(400);
+            
+            dialog.getDialogPane().setContent(orderTable);
+            dialog.showAndWait();
+        } catch (Exception e) {
+            showError("Error", "Could not load orders: " + e.getMessage());
+        }
     }
 
     @FXML
