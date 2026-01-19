@@ -7,7 +7,9 @@ The Smart E-Commerce System now features **fully automated database setup**! No 
 ## How It Works
 
 ### 1. Automatic Database Creation
+
 When you run the setup, the system will:
+
 - Connect to PostgreSQL server (default: localhost:5432)
 - Check if `ecommerce_db` database exists
 - Create the database if it doesn't exist
@@ -31,6 +33,7 @@ Port: 5432
 You can override defaults using environment variables:
 
 **Linux/Mac:**
+
 ```bash
 export DB_NAME=ecommerce_db
 export POSTGRES_USER=spycon
@@ -38,6 +41,7 @@ export POSTGRES_PASSWORD=postgressPassword12345
 ```
 
 **Windows:**
+
 ```cmd
 set DB_NAME=ecommerce_db
 set POSTGRES_USER=spycon
@@ -49,12 +53,14 @@ set POSTGRES_PASSWORD=postgressPassword12345
 ### Option 1: Using Setup Scripts (Easiest)
 
 **Linux/Mac:**
+
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
 **Windows:**
+
 ```cmd
 setup.bat
 ```
@@ -69,7 +75,7 @@ mvn compile exec:java -Dexec.mainClass="com.amalitech.smartecommerce.utils.Datab
 
 ```bash
 # Start PostgreSQL with Docker
-docker-compose up -d
+docker compose up -d
 
 # Wait a few seconds for PostgreSQL to start
 sleep 5
@@ -114,6 +120,7 @@ ecommerce_db
 ### Indexes Created
 
 For optimal performance:
+
 - Product name search index
 - User email index
 - Order date index
@@ -147,7 +154,9 @@ After setup completes, you'll see:
 ## Troubleshooting
 
 ### Issue: "Connection refused"
+
 **Solution:** Ensure PostgreSQL is running
+
 ```bash
 # Check if PostgreSQL is running
 sudo systemctl status postgresql
@@ -157,17 +166,22 @@ docker-compose ps
 ```
 
 ### Issue: "Database already exists"
+
 **Solution:** This is normal! The setup will use the existing database and recreate tables.
 
 ### Issue: "Authentication failed"
+
 **Solution:** Check your PostgreSQL credentials
+
 ```bash
 # Test connection
 psql -h localhost -U spycon -d postgres
 ```
 
 ### Issue: "Permission denied"
+
 **Solution:** Ensure your PostgreSQL user has CREATE DATABASE permission
+
 ```sql
 -- As postgres superuser
 ALTER USER spycon CREATEDB;
@@ -205,7 +219,7 @@ mvn compile exec:java -Dexec.mainClass="com.amalitech.smartecommerce.utils.Datab
 ## Security Notes
 
 1. **Password Hashing**: All user passwords are hashed using SHA-256
-2. **Demo Passwords**: 
+2. **Demo Passwords**:
    - admin123 → 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
    - manager123 → 6ee4a469cd4e91053847f5d3fcb61dbcc91e8f0ef10be7748da4c4a1ba382d17
    - customer123 → 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
@@ -217,6 +231,7 @@ mvn compile exec:java -Dexec.mainClass="com.amalitech.smartecommerce.utils.Datab
 After successful setup:
 
 1. Run the application:
+
    ```bash
    mvn javafx:run
    ```
@@ -231,6 +246,7 @@ After successful setup:
 ## Support
 
 If you encounter issues:
+
 1. Check PostgreSQL is running
 2. Verify credentials match docker-compose.yml
 3. Check logs for detailed error messages

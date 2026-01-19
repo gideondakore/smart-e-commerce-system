@@ -1,34 +1,53 @@
-# Performance Report
+# Performance Test Report
 
-## Overview
-This report documents the performance improvements achieved by implementing Database Indexing and In-Memory Caching in the Smart E-Commerce System.
+**Generated:** 2026-01-19 11:37:54
 
-## Methodology
-- **Dataset**: 10,000+ Products populated in the MySQL database.
-- **Environment**: Local MySQL 8.0 instance.
-- **Measurement Tool**: `System.nanoTime()` via `PerformanceTimer` utility.
+**Test Environment:**
+- Database: PostgreSQL
+- Test Data Size: 10000 products
+- Java Version: 25.0.1
 
-## Results
+## Summary Results
 
-### 1. Database Indexing (Search Optimization)
-We compared the execution time of searching for products by name ("Product 5000") with and without an index on the `name` column.
+| Test | Input | Time (ms) | Baseline (ms) | Improvement |
+|------|-------|-----------|---------------|-------------|
+| Data Population | 10000 records | 856.521 | - | - |
+| Search (No Index) | Performance Product 5000 | 25.073 | - | - |
+| Search (With Index) | Performance Product 5000 | 18.027 | 25.073 | 28.10% |
+| Fetch (Database) | Single Product | 14.212 | - | - |
+| Fetch (Cache) | Single Product | 0.033 | 14.212 | 99.77% |
+| QuickSort (Price) | 10043 items | 21.568 | - | - |
+| TimSort (Price) | 10043 items | 20.698 | - | - |
+| MergeSort (Name) | 10043 items | 34.012 | - | - |
+| Linear Search | Performance Product 4978 | 0.631 | - | - |
+| Binary Search | ID: 15022 | 0.022 | - | - |
+| HashMap Lookup | Performance Product 4978 | 0.015 | - | - |
 
-| Scenario | Execution Time | Improvement |
-| :--- | :--- | :--- |
-| **Without Index** | 234.761 ms | - |
-| **With Index** | 91.929 ms | **~2.5x Faster** |
+## Key Findings
 
-**Conclusion**: Adding an index on the `name` column significantly reduces the search time by avoiding a full table scan.
+### 1. Database Indexing
+- Adding an index on `LOWER(name)` significantly improves search performance
+- Index-based searches are recommended for production workloads
 
-### 2. Caching Strategy (Read Optimization)
-We compared the time taken to retrieve a product by ID from the Database vs. the In-Memory Cache (`HashMap`).
+### 2. Caching Strategy
+- In-memory caching (HashMap) provides near-instant lookups
+- Cache hit rates should be monitored in production
+- TTL-based cache invalidation prevents stale data
 
-| Scenario | Execution Time | Improvement |
-| :--- | :--- | :--- |
-| **Database Fetch (Cache Miss)** | 23.566 ms | - |
-| **Cache Fetch (Cache Hit)** | 0.400 ms | **~59x Faster** |
+### 3. Sorting Algorithms
+- Java's TimSort (used by default) performs well on real-world data
+- QuickSort is efficient for random data
+- MergeSort provides stable sorting with O(n log n) guarantee
 
-**Conclusion**: The Read-Through Cache strategy provides near-instantaneous access to frequently requested data, drastically reducing database load and latency.
+### 4. Search Algorithms
+- HashMap provides O(1) lookup after initial build
+- Binary Search provides O(log n) for sorted data
+- Linear Search is O(n) - avoid for large datasets
 
-## Summary
-The optimizations implemented (Indexing and Caching) have successfully improved the application's performance, meeting the requirements of Epic 4.
+## Recommendations
+
+1. **Always use database indexes** for frequently searched columns
+2. **Implement caching** for frequently accessed data
+3. **Use HashMap** for exact-match lookups
+4. **Use Binary Search** when data is already sorted
+5. **Monitor cache hit rates** to ensure caching effectiveness
