@@ -4,7 +4,7 @@
 
 ```bash
 # 1. Start PostgreSQL (if using Docker)
-docker-compose up -d
+docker compose up -d
 
 # 2. Setup Database (Automatic!)
 ./setup.sh
@@ -16,6 +16,7 @@ mvn javafx:run
 ## 📋 Common Commands
 
 ### Database Setup
+
 ```bash
 # Linux/Mac
 ./setup.sh
@@ -28,31 +29,35 @@ mvn compile exec:java -Dexec.mainClass="com.amalitech.smartecommerce.utils.Datab
 ```
 
 ### Run Application
+
 ```bash
 mvn javafx:run
 ```
 
 ### Build Project
+
 ```bash
 mvn clean compile
 ```
 
 ### Run Tests
+
 ```bash
 mvn test
 ```
 
 ### Performance Test
+
 ```bash
 mvn compile exec:java -Dexec.mainClass="com.amalitech.smartecommerce.utils.PerformanceTestRunner"
 ```
 
 ## 🔐 Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@shop.com | admin123 |
-| Manager | manager@shop.com | manager123 |
+| Role     | Email             | Password    |
+| -------- | ----------------- | ----------- |
+| Admin    | admin@shop.com    | admin123    |
+| Manager  | manager@shop.com  | manager123  |
 | Customer | customer@shop.com | customer123 |
 
 ## 🗄️ Database Info
@@ -72,10 +77,10 @@ Password: postgressPassword12345
 docker-compose up -d
 
 # Stop PostgreSQL
-docker-compose down
+docker compose down
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Access PostgreSQL CLI
 docker exec -it smart-ecommerce psql -U spycon -d ecommerce_db
@@ -148,6 +153,7 @@ SELECT p.name, r.rating, r.comment FROM reviews r JOIN products p ON r.product_i
 ## 🐛 Troubleshooting
 
 ### Database Connection Failed
+
 ```bash
 # Check PostgreSQL is running
 docker-compose ps
@@ -156,6 +162,7 @@ sudo systemctl status postgresql
 ```
 
 ### Port Already in Use
+
 ```bash
 # Check what's using port 5432
 sudo lsof -i :5432
@@ -164,6 +171,7 @@ netstat -ano | findstr :5432
 ```
 
 ### Reset Everything
+
 ```bash
 # Stop containers
 docker-compose down -v

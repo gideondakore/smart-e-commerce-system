@@ -1,6 +1,6 @@
 # Performance Test Report
 
-**Generated:** 2026-01-19 11:37:54
+**Generated:** 2026-01-19 14:22:48
 
 **Test Environment:**
 - Database: PostgreSQL
@@ -11,17 +11,17 @@
 
 | Test | Input | Time (ms) | Baseline (ms) | Improvement |
 |------|-------|-----------|---------------|-------------|
-| Data Population | 10000 records | 856.521 | - | - |
-| Search (No Index) | Performance Product 5000 | 25.073 | - | - |
-| Search (With Index) | Performance Product 5000 | 18.027 | 25.073 | 28.10% |
-| Fetch (Database) | Single Product | 14.212 | - | - |
-| Fetch (Cache) | Single Product | 0.033 | 14.212 | 99.77% |
-| QuickSort (Price) | 10043 items | 21.568 | - | - |
-| TimSort (Price) | 10043 items | 20.698 | - | - |
-| MergeSort (Name) | 10043 items | 34.012 | - | - |
-| Linear Search | Performance Product 4978 | 0.631 | - | - |
-| Binary Search | ID: 15022 | 0.022 | - | - |
-| HashMap Lookup | Performance Product 4978 | 0.015 | - | - |
+| Data Population | 10000 records | 976.673 | - | - |
+| Search (No Index) | Performance Product 5000 | 31.714 | - | - |
+| Search (With Index) | Performance Product 5000 | 18.749 | 31.714 | 40.88% |
+| Fetch (Database) | Single Product | 16.085 | - | - |
+| Fetch (Cache) | Single Product | 0.024 | 16.085 | 99.85% |
+| QuickSort (Price) | 10043 items | 16.859 | - | - |
+| TimSort (Price) | 10043 items | 20.954 | - | - |
+| MergeSort (Name) | 10043 items | 22.021 | - | - |
+| Linear Search | Performance Product 4978 | 0.686 | - | - |
+| Binary Search | ID: 25023 | 0.009 | - | - |
+| HashMap Lookup | Performance Product 4978 | 0.022 | - | - |
 
 ## Key Findings
 
