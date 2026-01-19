@@ -181,7 +181,10 @@ public class CustomerDashboardController {
             Dialog<Void> dialog = new Dialog<>();
             dialog.setTitle("My Orders");
             dialog.setHeaderText("Order History");
-            dialog.getDialogPane().getButtonTypes().addAll(new ButtonType("View Items", ButtonBar.ButtonData.OK_DONE), ButtonType.CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(
+                new ButtonType("View Items", ButtonBar.ButtonData.OK_DONE),
+                new ButtonType("Edit Order", ButtonBar.ButtonData.LEFT),
+                ButtonType.CLOSE);
             
             TableView<com.amalitech.smartecommerce.models.Order> orderTable = new TableView<>();
             TableColumn<com.amalitech.smartecommerce.models.Order, Integer> colOrderId = new TableColumn<>("Order ID");
@@ -207,9 +210,19 @@ public class CustomerDashboardController {
             dialog.getDialogPane().setContent(orderTable);
             
             dialog.setResultConverter(btn -> {
+                com.amalitech.smartecommerce.models.Order selected = orderTable.getSelectionModel().getSelectedItem();
                 if (btn.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                    com.amalitech.smartecommerce.models.Order selected = orderTable.getSelectionModel().getSelectedItem();
                     if (selected != null) showOrderItems(selected.getOrderId());
+                } else if (btn.getButtonData() == ButtonBar.ButtonData.LEFT) {
+                    if (selected != null) {
+                        if ("pending".equalsIgnoreCase(selected.getStatus())) {
+                            handleEditOrder(selected.getOrderId());
+                        } else {
+                            showWarning("Cannot Edit", "Only pending orders can be edited");
+                        }
+                    } else {
+                        showWarning("No Selection", "Please select an order to edit");
+                    }
                 }
                 return null;
             });
@@ -254,6 +267,112 @@ public class CustomerDashboardController {
             dialog.showAndWait();
         } catch (Exception e) {
             showError("Error", "Could not load order items: " + e.getMessage());
+        }
+    }
+
+    private void handleEditOrder(int orderId) {
+        try {
+            java.util.List<com.amalitech.smartecommerce.models.OrderItem> items = orderService.getOrderItems(orderId);
+            Map<Product, Integer> editCart = new HashMap<>();
+            
+            for (com.amalitech.smartecommerce.models.OrderItem item : items) {
+                Product product = productService.getProductById(item.getProductId());
+                if (product != null) {
+                    editCart.put(product, item.getQuantity());
+                }
+            }
+            
+            Dialog<Map<Product, Integer>> dialog = new Dialog<>();
+            dialog.setTitle("Edit Order");
+            dialog.setHeaderText("Edit Order #" + orderId + " (Pending)");
+            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+            
+            javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(10);
+            content.setPadding(new javafx.geometry.Insets(10));
+            
+            TableView<Product> availableProducts = new TableView<>();
+            TableColumn<Product, String> colName = new TableColumn<>("Product");
+            TableColumn<Product, Double> colPrice = new TableColumn<>("Price");
+            TableColumn<Product, Integer> colStock = new TableColumn<>("Stock");
+            
+            colName.setCellValueFactory(new PropertyValueFactory<>("name"));
+            colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
+            colStock.setCellValueFactory(new PropertyValueFactory<>("stockQuantity"));
+            
+            availableProducts.getColumns().addAll(colName, colPrice, colStock);
+            availableProducts.setItems(FXCollections.observableArrayList(productService.getAllProducts()));
+            availableProducts.setPrefHeight(200);
+            
+            TableView<CartEntry> editCartTable = new TableView<>();
+            TableColumn<CartEntry, String> colCartName = new TableColumn<>("Product");
+            TableColumn<CartEntry, Integer> colCartQty = new TableColumn<>("Quantity");
+            TableColumn<CartEntry, Double> colCartTotal = new TableColumn<>("Total");
+            
+            colCartName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getProduct().getName()));
+            colCartQty.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getQuantity()).asObject());
+            colCartTotal.setCellValueFactory(cellData -> new SimpleDoubleProperty(cellData.getValue().getProduct().getPrice() * cellData.getValue().getQuantity()).asObject());
+            
+            editCartTable.getColumns().addAll(colCartName, colCartQty, colCartTotal);
+            ObservableList<CartEntry> editCartList = FXCollections.observableArrayList();
+            for (Map.Entry<Product, Integer> entry : editCart.entrySet()) {
+                editCartList.add(new CartEntry(entry.getKey(), entry.getValue()));
+            }
+            editCartTable.setItems(editCartList);
+            editCartTable.setPrefHeight(150);
+            
+            javafx.scene.layout.HBox buttons = new javafx.scene.layout.HBox(10);
+            Button addBtn = new Button("Add to Order");
+            Button removeBtn = new Button("Remove from Order");
+            
+            addBtn.setOnAction(e -> {
+                Product selected = availableProducts.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    int currentQty = editCart.getOrDefault(selected, 0);
+                    if (currentQty < selected.getStockQuantity()) {
+                        editCart.put(selected, currentQty + 1);
+                        editCartList.clear();
+                        for (Map.Entry<Product, Integer> entry : editCart.entrySet()) {
+                            editCartList.add(new CartEntry(entry.getKey(), entry.getValue()));
+                        }
+                    } else {
+                        showWarning("Stock Limit", "Cannot add more than available stock");
+                    }
+                }
+            });
+            
+            removeBtn.setOnAction(e -> {
+                CartEntry selected = editCartTable.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    editCart.remove(selected.getProduct());
+                    editCartList.remove(selected);
+                }
+            });
+            
+            buttons.getChildren().addAll(addBtn, removeBtn);
+            content.getChildren().addAll(
+                new Label("Available Products:"), availableProducts,
+                buttons,
+                new Label("Current Order Items:"), editCartTable
+            );
+            
+            dialog.getDialogPane().setContent(content);
+            dialog.setResultConverter(btn -> btn == ButtonType.OK ? editCart : null);
+            
+            dialog.showAndWait().ifPresent(updatedCart -> {
+                if (updatedCart.isEmpty()) {
+                    showWarning("Empty Order", "Order must contain at least one item");
+                    return;
+                }
+                boolean success = orderService.updateOrder(orderId, updatedCart);
+                if (success) {
+                    showInfo("Success", "Order updated successfully!");
+                    loadData();
+                } else {
+                    showError("Update Failed", "Could not update order. Please try again.");
+                }
+            });
+        } catch (Exception e) {
+            showError("Error", "Could not edit order: " + e.getMessage());
         }
     }
 

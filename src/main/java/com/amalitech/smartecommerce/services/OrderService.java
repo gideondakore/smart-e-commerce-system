@@ -40,4 +40,13 @@ public class OrderService {
   public List<OrderItem> getOrderItems(int orderId) throws SQLException {
     return orderDAO.getOrderItems(orderId);
   }
+
+  public boolean updateOrder(int orderId, Map<Product, Integer> newItems) {
+    try {
+      return orderDAO.updateOrder(orderId, newItems);
+    } catch (SQLException e) {
+      System.err.println("Order update failed: " + e.getMessage());
+      return false;
+    }
+  }
 }

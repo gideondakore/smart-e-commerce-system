@@ -191,4 +191,112 @@ public class OrderDAO {
     }
     return items;
   }
+
+  public boolean updateOrder(int orderId, Map<Product, Integer> newItems) throws SQLException {
+    Connection conn = null;
+    try {
+      conn = DatabaseConnection.getInstance().getConnection();
+      conn.setAutoCommit(false);
+
+      // Get old items using the same connection
+      List<OrderItem> oldItems = new ArrayList<>();
+      String getItemsSQL = "SELECT oi.*, p.name as product_name FROM order_items oi " +
+                           "JOIN products p ON oi.product_id = p.product_id WHERE oi.order_id = ?";
+      try (PreparedStatement stmt = conn.prepareStatement(getItemsSQL)) {
+        stmt.setInt(1, orderId);
+        try (ResultSet rs = stmt.executeQuery()) {
+          while (rs.next()) {
+            OrderItem item = new OrderItem(
+              rs.getInt("product_id"),
+              rs.getInt("quantity"),
+              rs.getDouble("price_at_purchase")
+            );
+            item.setId(rs.getInt("id"));
+            item.setOrderId(orderId);
+            item.setProductName(rs.getString("product_name"));
+            oldItems.add(item);
+          }
+        }
+      }
+
+      // Restore stock from old items
+      for (OrderItem item : oldItems) {
+        String restoreStockSQL = "UPDATE products SET stock_quantity = stock_quantity + ? WHERE product_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(restoreStockSQL)) {
+          stmt.setInt(1, item.getQuantity());
+          stmt.setInt(2, item.getProductId());
+          stmt.executeUpdate();
+        }
+      }
+
+      // Delete old items
+      String deleteItemsSQL = "DELETE FROM order_items WHERE order_id = ?";
+      try (PreparedStatement stmt = conn.prepareStatement(deleteItemsSQL)) {
+        stmt.setInt(1, orderId);
+        stmt.executeUpdate();
+      }
+
+      // Calculate new total
+      double totalAmount = 0;
+      for (Map.Entry<Product, Integer> entry : newItems.entrySet()) {
+        totalAmount += entry.getKey().getPrice() * entry.getValue();
+      }
+
+      // Insert new items and update stock
+      String insertItemSQL = "INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) VALUES (?, ?, ?, ?)";
+      String updateStockSQL = "UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND stock_quantity >= ?";
+
+      try (PreparedStatement itemStmt = conn.prepareStatement(insertItemSQL);
+           PreparedStatement stockStmt = conn.prepareStatement(updateStockSQL)) {
+        for (Map.Entry<Product, Integer> entry : newItems.entrySet()) {
+          Product product = entry.getKey();
+          int quantity = entry.getValue();
+
+          itemStmt.setInt(1, orderId);
+          itemStmt.setInt(2, product.getProductId());
+          itemStmt.setInt(3, quantity);
+          itemStmt.setDouble(4, product.getPrice());
+          itemStmt.addBatch();
+
+          stockStmt.setInt(1, quantity);
+          stockStmt.setInt(2, product.getProductId());
+          stockStmt.setInt(3, quantity);
+          int stockRows = stockStmt.executeUpdate();
+
+          if (stockRows == 0) {
+            throw new SQLException("Insufficient stock for product: " + product.getName());
+          }
+        }
+        itemStmt.executeBatch();
+      }
+
+      // Update order total
+      String updateOrderSQL = "UPDATE orders SET total_amount = ? WHERE order_id = ?";
+      try (PreparedStatement stmt = conn.prepareStatement(updateOrderSQL)) {
+        stmt.setDouble(1, totalAmount);
+        stmt.setInt(2, orderId);
+        stmt.executeUpdate();
+      }
+
+      conn.commit();
+      return true;
+    } catch (SQLException e) {
+      if (conn != null) {
+        try {
+          conn.rollback();
+        } catch (SQLException ex) {
+          ex.printStackTrace();
+        }
+      }
+      throw e;
+    } finally {
+      if (conn != null) {
+        try {
+          conn.setAutoCommit(true);
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
 }
