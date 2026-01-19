@@ -43,8 +43,8 @@ public class SignupController {
             return;
         }
 
-        if (password.length() < 6) {
-            showError("Password must be at least 6 characters");
+        if (!isPasswordStrong(password)) {
+            showError("Password must be at least 8 characters and contain uppercase, lowercase, digit, and special character");
             return;
         }
 
@@ -103,6 +103,18 @@ public class SignupController {
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
+    }
+
+    private boolean isPasswordStrong(String password) {
+        if (password.length() < 8) return false;
+        boolean hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
+        for (char c : password.toCharArray()) {
+            if (Character.isUpperCase(c)) hasUpper = true;
+            else if (Character.isLowerCase(c)) hasLower = true;
+            else if (Character.isDigit(c)) hasDigit = true;
+            else if (!Character.isLetterOrDigit(c)) hasSpecial = true;
+        }
+        return hasUpper && hasLower && hasDigit && hasSpecial;
     }
 
     private String hashPassword(String password) throws Exception {

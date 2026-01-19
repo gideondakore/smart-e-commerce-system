@@ -8,7 +8,7 @@
            fx:controller="com.amalitech.smartecommerce.controllers.SignupController"
            style="-fx-background-color: linear-gradient(to bottom right, #667eea 0%, #764ba2 100%);">
     
-    <VBox alignment="CENTER" spacing="20" maxWidth="450" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 5);">
+    <VBox alignment="CENTER" spacing="20" maxWidth="550" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 5);">
         <padding>
             <Insets top="40" right="50" bottom="40" left="50"/>
         </padding>
@@ -17,6 +17,8 @@
             <Label text="🛒" style="-fx-font-size: 48px;"/>
             <Label text="Create Account" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/>
             <Label text="Join Smart E-Commerce today" style="-fx-font-size: 14px; -fx-text-fill: #6b7280;"/>
+            <Label text="Password must be 8+ chars with uppercase, lowercase, digit, and special character" 
+                   style="-fx-font-size: 11px; -fx-text-fill: #9ca3af; -fx-font-style: italic;" wrapText="true" maxWidth="450"/>
         </VBox>
         
         <Label fx:id="errorLabel" text="Error message" 
@@ -43,7 +45,7 @@
         
         <VBox spacing="8">
             <Label text="Password" style="-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
-            <PasswordField fx:id="passwordField" promptText="Create a password" 
+            <PasswordField fx:id="passwordField" promptText="Min 8 chars: A-Z, a-z, 0-9, @#$%" 
                           style="-fx-background-color: #f9fafb; -fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; -fx-font-size: 14px;"/>
         </VBox>
         
