@@ -571,7 +571,6 @@ public class AdminDashboardController {
         
         javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(15);
         content.setPadding(new javafx.geometry.Insets(20));
-        content.setPrefWidth(600);
         
         Label title1 = new Label("1. CACHING DEMONSTRATION");
         title1.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
@@ -580,6 +579,8 @@ public class AdminDashboardController {
         Button testCacheBtn = new Button("Test Cache Performance");
         Label cacheResult = new Label("");
         cacheResult.setStyle("-fx-font-size: 12px;");
+        cacheResult.setWrapText(true);
+        cacheResult.setMaxWidth(600);
         cacheTest.getChildren().addAll(testCacheBtn, cacheResult);
         
         testCacheBtn.setOnAction(e -> {
@@ -611,13 +612,17 @@ public class AdminDashboardController {
         Label title2 = new Label("2. INDEXING DEMONSTRATION");
         title2.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 20 0 0 0;");
         
-        javafx.scene.layout.HBox indexTest = new javafx.scene.layout.HBox(10);
+        javafx.scene.layout.VBox indexTest = new javafx.scene.layout.VBox(10);
+        javafx.scene.layout.HBox indexInput = new javafx.scene.layout.HBox(10);
         TextField searchTerm = new TextField("Laptop");
         searchTerm.setPrefWidth(150);
         Button testIndexBtn = new Button("Test Index Performance");
+        indexInput.getChildren().addAll(new Label("Search:"), searchTerm, testIndexBtn);
         Label indexResult = new Label("");
         indexResult.setStyle("-fx-font-size: 12px;");
-        indexTest.getChildren().addAll(new Label("Search:"), searchTerm, testIndexBtn, indexResult);
+        indexResult.setWrapText(true);
+        indexResult.setMaxWidth(600);
+        indexTest.getChildren().addAll(indexInput, indexResult);
         
         testIndexBtn.setOnAction(e -> {
             indexResult.setText("Testing...");
@@ -631,7 +636,7 @@ public class AdminDashboardController {
                     
                     javafx.application.Platform.runLater(() -> 
                         indexResult.setText(String.format(
-                            "Search time: %.2fms (using SQL index on LOWER(name))",
+                            "Search time: %.2fms\nUsing SQL index on LOWER(name) for fast case-insensitive search",
                             indexTime/1_000_000.0
                         ))
                     );
@@ -648,6 +653,8 @@ public class AdminDashboardController {
         Button testSortBtn = new Button("Compare Sorting Algorithms");
         Label sortResult = new Label("");
         sortResult.setStyle("-fx-font-size: 12px;");
+        sortResult.setWrapText(true);
+        sortResult.setMaxWidth(600);
         sortTest.getChildren().addAll(testSortBtn, sortResult);
         
         testSortBtn.setOnAction(e -> {
@@ -685,10 +692,16 @@ public class AdminDashboardController {
         );
         explanation.setStyle("-fx-font-size: 11px; -fx-text-fill: #6b7280; -fx-padding: 10; -fx-background-color: #f3f4f6; -fx-background-radius: 5;");
         explanation.setWrapText(true);
+        explanation.setMaxWidth(600);
         
         content.getChildren().addAll(title1, cacheTest, title2, indexTest, title3, sortTest, explanation);
-        dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().setPrefWidth(650);
+        
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefSize(700, 500);
+        
+        dialog.getDialogPane().setContent(scrollPane);
+        dialog.getDialogPane().setPrefSize(750, 550);
         dialog.showAndWait();
     }
 

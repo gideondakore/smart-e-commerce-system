@@ -92,6 +92,18 @@ public class LoginController {
     }
 
     @FXML
+    private void handleSignup() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/signup.fxml"));
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            showError("Navigation error: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void initialize() {
         errorLabel.setVisible(false);
     }
