@@ -85,6 +85,8 @@
                     style="-fx-background-color: #ec4899; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
             <Button text="Manage Orders" onAction="#handleManageOrders" 
                     style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
+            <Button text="Manage Reviews" onAction="#handleManageReviews" 
+                    style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
             <Button text="📋 Inventory Logs" onAction="#handleViewInventoryLogs" 
                     style="-fx-background-color: #06b6d4; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"/>
         </HBox>

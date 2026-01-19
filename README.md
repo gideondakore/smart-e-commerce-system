@@ -11,6 +11,7 @@ A JavaFX Desktop Application backed by a PostgreSQL database, demonstrating raw 
 - **Caching**: In-memory `HashMap` cache to reduce database hits
 - **Sorting**: Sort products by price (Ascending/Descending)
 - **🛒 Shopping Cart**: Real-time cart management and checkout
+- **⭐ Product Reviews**: Customers can rate and review products
 - **Performance Tracking**: Real-time execution time logging
 
 ## Demo Credentials

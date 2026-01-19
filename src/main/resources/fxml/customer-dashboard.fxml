@@ -49,6 +49,12 @@
                 </TableView>
                 <Button text="Add to Cart" onAction="#handleAddToCart" maxWidth="Infinity"
                         style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <HBox spacing="10">
+                    <Button text="View Reviews" onAction="#handleViewReviews" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                            style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-padding: 10; -fx-background-radius: 8; -fx-font-weight: bold;"/>
+                    <Button text="Add Review" onAction="#handleAddReview" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                            style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-padding: 10; -fx-background-radius: 8; -fx-font-weight: bold;"/>
+                </HBox>
             </VBox>
             
             <!-- Shopping Cart Section -->

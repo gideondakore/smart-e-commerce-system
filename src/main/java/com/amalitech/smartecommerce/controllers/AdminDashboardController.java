@@ -6,9 +6,11 @@ import com.amalitech.smartecommerce.dao.UserDAO;
 import com.amalitech.smartecommerce.models.Category;
 import com.amalitech.smartecommerce.models.InventoryLog;
 import com.amalitech.smartecommerce.models.Product;
+import com.amalitech.smartecommerce.models.Review;
 import com.amalitech.smartecommerce.models.User;
 import com.amalitech.smartecommerce.services.OrderService;
 import com.amalitech.smartecommerce.services.ProductService;
+import com.amalitech.smartecommerce.services.ReviewService;
 import com.amalitech.smartecommerce.utils.SessionManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -41,6 +43,7 @@ public class AdminDashboardController {
 
     private final ProductService productService = new ProductService();
     private final OrderService orderService = new OrderService();
+    private final ReviewService reviewService = new ReviewService();
     private final UserDAO userDAO = new UserDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
     private final InventoryLogDAO inventoryLogDAO = new InventoryLogDAO();
@@ -710,6 +713,86 @@ public class AdminDashboardController {
         dialog.getDialogPane().setContent(scrollPane);
         dialog.getDialogPane().setPrefSize(750, 550);
         dialog.showAndWait();
+    }
+
+    @SuppressWarnings("unchecked")
+    @FXML
+    private void handleManageReviews() {
+        try {
+            List<Review> reviews = reviewService.getProductReviews(0); // Get all reviews
+            if (reviews.isEmpty()) {
+                // Fallback: get all reviews using DAO
+                reviews = new com.amalitech.smartecommerce.dao.ReviewDAO().findAll();
+            }
+            
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Review Management");
+            dialog.setHeaderText("All Product Reviews");
+            
+            ButtonType deleteButton = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(deleteButton, ButtonType.CLOSE);
+            
+            TableView<Review> reviewTable = new TableView<>();
+            TableColumn<Review, Integer> colReviewId = new TableColumn<>("ID");
+            TableColumn<Review, String> colProduct = new TableColumn<>("Product");
+            TableColumn<Review, String> colUser = new TableColumn<>("User");
+            TableColumn<Review, Integer> colRating = new TableColumn<>("Rating");
+            TableColumn<Review, String> colTitle = new TableColumn<>("Title");
+            TableColumn<Review, String> colComment = new TableColumn<>("Comment");
+            TableColumn<Review, Integer> colHelpful = new TableColumn<>("Helpful");
+            
+            colReviewId.setCellValueFactory(new PropertyValueFactory<>("reviewId"));
+            colProduct.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getProductName()));
+            colUser.setCellValueFactory(cellData -> 
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getUserName()));
+            colRating.setCellValueFactory(new PropertyValueFactory<>("rating"));
+            colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+            colComment.setCellValueFactory(new PropertyValueFactory<>("comment"));
+            colHelpful.setCellValueFactory(new PropertyValueFactory<>("helpfulVotes"));
+            
+            colReviewId.setPrefWidth(50);
+            colProduct.setPrefWidth(120);
+            colUser.setPrefWidth(120);
+            colRating.setPrefWidth(60);
+            colTitle.setPrefWidth(150);
+            colComment.setPrefWidth(200);
+            colHelpful.setPrefWidth(70);
+            
+            reviewTable.getColumns().addAll(colReviewId, colProduct, colUser, colRating, colTitle, colComment, colHelpful);
+            reviewTable.setItems(FXCollections.observableArrayList(reviews));
+            reviewTable.setPrefHeight(400);
+            
+            dialog.getDialogPane().setContent(reviewTable);
+            dialog.getDialogPane().setPrefWidth(850);
+            
+            dialog.setResultConverter(btn -> {
+                if (btn == deleteButton) {
+                    Review selected = reviewTable.getSelectionModel().getSelectedItem();
+                    if (selected != null) {
+                        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                        confirm.setTitle("Confirm Delete");
+                        confirm.setContentText("Delete this review?");
+                        if (confirm.showAndWait().get() == ButtonType.OK) {
+                            try {
+                                new com.amalitech.smartecommerce.dao.ReviewDAO().delete(selected.getReviewId());
+                                showInfo("Success", "Review deleted");
+                                reviewTable.getItems().remove(selected);
+                            } catch (SQLException e) {
+                                showError("Error", e.getMessage());
+                            }
+                        }
+                    } else {
+                        showWarning("No Selection", "Please select a review to delete");
+                    }
+                }
+                return null;
+            });
+            
+            dialog.showAndWait();
+        } catch (SQLException e) {
+            showError("Error", "Could not load reviews: " + e.getMessage());
+        }
     }
 
     @SuppressWarnings("unchecked")

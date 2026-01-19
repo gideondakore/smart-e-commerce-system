@@ -1,9 +1,11 @@
 package com.amalitech.smartecommerce.controllers;
 
 import com.amalitech.smartecommerce.models.Product;
+import com.amalitech.smartecommerce.models.Review;
 import com.amalitech.smartecommerce.models.User;
 import com.amalitech.smartecommerce.services.OrderService;
 import com.amalitech.smartecommerce.services.ProductService;
+import com.amalitech.smartecommerce.services.ReviewService;
 import com.amalitech.smartecommerce.utils.SessionManager;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -42,6 +44,7 @@ public class CustomerDashboardController {
 
     private final ProductService productService = new ProductService();
     private final OrderService orderService = new OrderService();
+    private final ReviewService reviewService = new ReviewService();
     private ObservableList<Product> productList;
     private ObservableList<CartEntry> cartList;
     private Map<Product, Integer> cartMap;
@@ -377,6 +380,139 @@ public class CustomerDashboardController {
         } catch (Exception e) {
             showError("Error", "Could not edit order: " + e.getMessage());
         }
+    }
+
+    @FXML
+    private void handleViewReviews() {
+        Product selected = productTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showWarning("No Selection", "Please select a product to view reviews");
+            return;
+        }
+        showProductReviews(selected);
+    }
+
+    @FXML
+    private void handleAddReview() {
+        Product selected = productTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showWarning("No Selection", "Please select a product to review");
+            return;
+        }
+        showAddReviewDialog(selected);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void showProductReviews(Product product) {
+        try {
+            List<Review> reviews = reviewService.getProductReviews(product.getProductId());
+            double avgRating = reviewService.getAverageRating(product.getProductId());
+            
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Product Reviews");
+            dialog.setHeaderText(product.getName() + " - " + String.format("%.1f ★ (%d reviews)", avgRating, reviews.size()));
+            dialog.getDialogPane().getButtonTypes().addAll(
+                new ButtonType("Mark Helpful", ButtonBar.ButtonData.LEFT),
+                ButtonType.CLOSE);
+            
+            TableView<Review> reviewTable = new TableView<>();
+            TableColumn<Review, String> colUser = new TableColumn<>("User");
+            TableColumn<Review, Integer> colRating = new TableColumn<>("Rating");
+            TableColumn<Review, String> colTitle = new TableColumn<>("Title");
+            TableColumn<Review, String> colComment = new TableColumn<>("Comment");
+            TableColumn<Review, Integer> colHelpful = new TableColumn<>("Helpful");
+            
+            colUser.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getUserName()));
+            colRating.setCellValueFactory(new PropertyValueFactory<>("rating"));
+            colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+            colComment.setCellValueFactory(new PropertyValueFactory<>("comment"));
+            colHelpful.setCellValueFactory(new PropertyValueFactory<>("helpfulVotes"));
+            
+            colUser.setPrefWidth(120);
+            colRating.setPrefWidth(60);
+            colTitle.setPrefWidth(150);
+            colComment.setPrefWidth(250);
+            colHelpful.setPrefWidth(70);
+            
+            reviewTable.getColumns().addAll(colUser, colRating, colTitle, colComment, colHelpful);
+            reviewTable.setItems(FXCollections.observableArrayList(reviews));
+            reviewTable.setPrefHeight(400);
+            
+            dialog.getDialogPane().setContent(reviewTable);
+            
+            dialog.setResultConverter(btn -> {
+                if (btn.getButtonData() == ButtonBar.ButtonData.LEFT) {
+                    Review selected = reviewTable.getSelectionModel().getSelectedItem();
+                    if (selected != null) {
+                        try {
+                            reviewService.markHelpful(selected.getReviewId());
+                            showInfo("Success", "Marked review as helpful");
+                            showProductReviews(product);
+                        } catch (SQLException e) {
+                            showError("Error", "Could not mark review as helpful");
+                        }
+                    } else {
+                        showWarning("No Selection", "Please select a review");
+                    }
+                }
+                return null;
+            });
+            
+            dialog.showAndWait();
+        } catch (SQLException e) {
+            showError("Error", "Could not load reviews: " + e.getMessage());
+        }
+    }
+
+    private void showAddReviewDialog(Product product) {
+        Dialog<Review> dialog = new Dialog<>();
+        dialog.setTitle("Add Review");
+        dialog.setHeaderText("Write a review for " + product.getName());
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20));
+        
+        ComboBox<Integer> ratingBox = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4, 5));
+        ratingBox.setPromptText("Select rating");
+        TextField titleField = new TextField();
+        titleField.setPromptText("Review title");
+        TextArea commentArea = new TextArea();
+        commentArea.setPromptText("Write your review...");
+        commentArea.setPrefRowCount(5);
+        
+        grid.add(new Label("Rating:"), 0, 0);
+        grid.add(ratingBox, 1, 0);
+        grid.add(new Label("Title:"), 0, 1);
+        grid.add(titleField, 1, 1);
+        grid.add(new Label("Comment:"), 0, 2);
+        grid.add(commentArea, 1, 2);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        dialog.setResultConverter(btn -> {
+            if (btn == ButtonType.OK) {
+                if (ratingBox.getValue() == null || titleField.getText().trim().isEmpty()) {
+                    showWarning("Invalid Input", "Please provide rating and title");
+                    return null;
+                }
+                User user = SessionManager.getInstance().getCurrentUser();
+                return new Review(product.getProductId(), user.getUserId(), 
+                    ratingBox.getValue(), titleField.getText().trim(), commentArea.getText().trim());
+            }
+            return null;
+        });
+        
+        dialog.showAndWait().ifPresent(review -> {
+            try {
+                reviewService.addReview(review);
+                showInfo("Success", "Review added successfully!");
+            } catch (SQLException e) {
+                showError("Error", "Could not add review: " + e.getMessage());
+            }
+        });
     }
 
     @FXML
