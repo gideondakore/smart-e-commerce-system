@@ -310,7 +310,6 @@ public class DashboardController {
                 });
     }
 
-    // TODO: I will come back and work on this edit feature later
     @FXML
     private void handleEdit() {
         Product selected = productTable.getSelectionModel().getSelectedItem();
