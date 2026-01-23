@@ -3,6 +3,7 @@ package com.amalitech.smartecommerce.controllers;
 import com.amalitech.smartecommerce.models.User;
 import com.amalitech.smartecommerce.services.AuthService;
 import com.amalitech.smartecommerce.utils.SessionManager;
+import com.amalitech.smartecommerce.utils.ValidationUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -28,8 +29,18 @@ public class LoginController {
         String email = emailField.getText().trim();
         String password = passwordField.getText();
 
-        if (email.isEmpty() || password.isEmpty()) {
+        if (!ValidationUtils.isNotEmpty(email) || !ValidationUtils.isNotEmpty(password)) {
             showError("Please enter both email and password");
+            return;
+        }
+
+        if (!ValidationUtils.isValidEmail(email)) {
+            showError("Please enter a valid email address");
+            return;
+        }
+
+        if (ValidationUtils.containsSqlInjection(email)) {
+            showError("Invalid characters in email");
             return;
         }
 

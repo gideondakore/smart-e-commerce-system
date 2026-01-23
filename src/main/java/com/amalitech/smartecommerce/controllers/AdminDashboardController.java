@@ -12,6 +12,7 @@ import com.amalitech.smartecommerce.services.OrderService;
 import com.amalitech.smartecommerce.services.ProductService;
 import com.amalitech.smartecommerce.services.ReviewService;
 import com.amalitech.smartecommerce.utils.SessionManager;
+import com.amalitech.smartecommerce.utils.ValidationUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -171,9 +172,33 @@ public class AdminDashboardController {
                     double price = Double.parseDouble(priceField.getText());
                     int stock = Integer.parseInt(stockField.getText());
                     Category cat = categoryBox.getValue();
-                    if (name.isEmpty() || cat == null) return null;
+                    
+                    ValidationUtils.ValidationResult nameValidation = ValidationUtils.validateProductName(name);
+                    if (!nameValidation.isValid()) {
+                        showError("Validation Error", nameValidation.getMessage());
+                        return null;
+                    }
+                    
+                    ValidationUtils.ValidationResult priceValidation = ValidationUtils.validatePrice(price);
+                    if (!priceValidation.isValid()) {
+                        showError("Validation Error", priceValidation.getMessage());
+                        return null;
+                    }
+                    
+                    ValidationUtils.ValidationResult stockValidation = ValidationUtils.validateStockQuantity(stock);
+                    if (!stockValidation.isValid()) {
+                        showError("Validation Error", stockValidation.getMessage());
+                        return null;
+                    }
+                    
+                    if (cat == null) {
+                        showError("Validation Error", "Please select a category");
+                        return null;
+                    }
+                    
                     return new Product(cat.getCategoryId(), name, price, stock);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
+                    showError("Validation Error", "Please enter valid numbers for price and stock");
                     return null;
                 }
             }
@@ -259,9 +284,33 @@ public class AdminDashboardController {
                     double price = Double.parseDouble(priceField.getText());
                     int stock = Integer.parseInt(stockField.getText());
                     Category cat = categoryBox.getValue();
-                    if (name.isEmpty() || cat == null) return null;
+                    
+                    ValidationUtils.ValidationResult nameValidation = ValidationUtils.validateProductName(name);
+                    if (!nameValidation.isValid()) {
+                        showError("Validation Error", nameValidation.getMessage());
+                        return null;
+                    }
+                    
+                    ValidationUtils.ValidationResult priceValidation = ValidationUtils.validatePrice(price);
+                    if (!priceValidation.isValid()) {
+                        showError("Validation Error", priceValidation.getMessage());
+                        return null;
+                    }
+                    
+                    ValidationUtils.ValidationResult stockValidation = ValidationUtils.validateStockQuantity(stock);
+                    if (!stockValidation.isValid()) {
+                        showError("Validation Error", stockValidation.getMessage());
+                        return null;
+                    }
+                    
+                    if (cat == null) {
+                        showError("Validation Error", "Please select a category");
+                        return null;
+                    }
+                    
                     return new Product(selected.getProductId(), cat.getCategoryId(), name, price, stock);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
+                    showError("Validation Error", "Please enter valid numbers for price and stock");
                     return null;
                 }
             }

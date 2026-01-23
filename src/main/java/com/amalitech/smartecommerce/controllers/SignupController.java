@@ -2,6 +2,8 @@ package com.amalitech.smartecommerce.controllers;
 
 import com.amalitech.smartecommerce.dao.UserDAO;
 import com.amalitech.smartecommerce.models.User;
+import com.amalitech.smartecommerce.utils.ValidationUtils;
+import com.amalitech.smartecommerce.services.AuthService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,7 +12,6 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.sql.SQLException;
 
 public class SignupController {
@@ -33,18 +34,35 @@ public class SignupController {
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        if (!ValidationUtils.isNotEmpty(firstName) || !ValidationUtils.isNotEmpty(lastName) || 
+            !ValidationUtils.isNotEmpty(email) || !ValidationUtils.isNotEmpty(password)) {
             showError("Please fill in all fields");
             return;
         }
 
-        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+        if (!ValidationUtils.isValidLength(firstName, 2, 100)) {
+            showError("First name must be between 2 and 100 characters");
+            return;
+        }
+
+        if (!ValidationUtils.isValidLength(lastName, 2, 100)) {
+            showError("Last name must be between 2 and 100 characters");
+            return;
+        }
+
+        if (!ValidationUtils.isValidEmail(email)) {
             showError("Please enter a valid email address");
             return;
         }
 
-        if (!isPasswordStrong(password)) {
-            showError("Password must be at least 8 characters and contain uppercase, lowercase, digit, and special character");
+        if (ValidationUtils.containsSqlInjection(email) || ValidationUtils.containsSqlInjection(firstName) || 
+            ValidationUtils.containsSqlInjection(lastName)) {
+            showError("Invalid characters detected");
+            return;
+        }
+
+        if (!ValidationUtils.isValidPassword(password)) {
+            showError(ValidationUtils.getPasswordStrengthFeedback(password));
             return;
         }
 
@@ -59,7 +77,7 @@ public class SignupController {
                 return;
             }
 
-            String passwordHash = hashPassword(password);
+            String passwordHash = AuthService.hashPassword(password);
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setPasswordHash(passwordHash);
@@ -103,30 +121,6 @@ public class SignupController {
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
-    }
-
-    private boolean isPasswordStrong(String password) {
-        if (password.length() < 8) return false;
-        boolean hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
-        for (char c : password.toCharArray()) {
-            if (Character.isUpperCase(c)) hasUpper = true;
-            else if (Character.isLowerCase(c)) hasLower = true;
-            else if (Character.isDigit(c)) hasDigit = true;
-            else if (!Character.isLetterOrDigit(c)) hasSpecial = true;
-        }
-        return hasUpper && hasLower && hasDigit && hasSpecial;
-    }
-
-    private String hashPassword(String password) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hash = md.digest(password.getBytes());
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.toString();
     }
 
     @FXML

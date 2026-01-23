@@ -7,6 +7,7 @@ import com.amalitech.smartecommerce.models.User;
 import com.amalitech.smartecommerce.services.OrderService;
 import com.amalitech.smartecommerce.services.ProductService;
 import com.amalitech.smartecommerce.utils.SessionManager;
+import com.amalitech.smartecommerce.utils.ValidationUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -100,10 +101,13 @@ public class ManagerDashboardController {
         dialog.showAndWait().ifPresent(input -> {
             try {
                 int newStock = Integer.parseInt(input);
-                if (newStock < 0) {
-                    showWarning("Invalid Input", "Stock cannot be negative");
+                
+                ValidationUtils.ValidationResult stockValidation = ValidationUtils.validateStockQuantity(newStock);
+                if (!stockValidation.isValid()) {
+                    showWarning("Validation Error", stockValidation.getMessage());
                     return;
                 }
+                
                 selected.setStockQuantity(newStock);
                 productService.updateProduct(selected);
                 loadData();
@@ -270,7 +274,17 @@ public class ManagerDashboardController {
                     double price = Double.parseDouble(priceField.getText());
                     int stock = Integer.parseInt(stockField.getText());
                     Category cat = categoryBox.getValue();
-                    if (name.isEmpty() || cat == null) return null;
+                    
+                    ValidationUtils.ValidationResult nameValidation = ValidationUtils.validateProductName(name);
+                    if (!nameValidation.isValid()) return null;
+                    
+                    ValidationUtils.ValidationResult priceValidation = ValidationUtils.validatePrice(price);
+                    if (!priceValidation.isValid()) return null;
+                    
+                    ValidationUtils.ValidationResult stockValidation = ValidationUtils.validateStockQuantity(stock);
+                    if (!stockValidation.isValid()) return null;
+                    
+                    if (cat == null) return null;
                     return new Product(cat.getCategoryId(), name, price, stock);
                 } catch (Exception e) { return null; }
             }
@@ -341,7 +355,17 @@ public class ManagerDashboardController {
                     double price = Double.parseDouble(priceField.getText());
                     int stock = Integer.parseInt(stockField.getText());
                     Category cat = categoryBox.getValue();
-                    if (name.isEmpty() || cat == null) return null;
+                    
+                    ValidationUtils.ValidationResult nameValidation = ValidationUtils.validateProductName(name);
+                    if (!nameValidation.isValid()) return null;
+                    
+                    ValidationUtils.ValidationResult priceValidation = ValidationUtils.validatePrice(price);
+                    if (!priceValidation.isValid()) return null;
+                    
+                    ValidationUtils.ValidationResult stockValidation = ValidationUtils.validateStockQuantity(stock);
+                    if (!stockValidation.isValid()) return null;
+                    
+                    if (cat == null) return null;
                     return new Product(selected.getProductId(), cat.getCategoryId(), name, price, stock);
                 } catch (Exception e) { return null; }
             }
